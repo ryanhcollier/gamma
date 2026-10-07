@@ -6,37 +6,55 @@
   "scratch_days": 9,
   "win_rate_pct": 68.6,
   "total_win_rate_pct": 58.3,
-  "avg_return_proxy_pct": 0.46,
+  "avg_return_proxy_pct": 0.43,
   "summary_banner": "68.6% Win Rate (35W - 16L) (9 Scratches)",
   "regime_stats": {
     "positive_gamma": {
-      "count": 31,
-      "wins": 20,
+      "count": 32,
+      "wins": 21,
       "losses": 7,
-      "win_rate": 74.1
+      "win_rate": 75.0
     },
     "negative_gamma": {
-      "count": 29,
-      "wins": 15,
+      "count": 28,
+      "wins": 14,
       "losses": 9,
-      "win_rate": 62.5
+      "win_rate": 60.9
     }
   },
   "sessions": [
     {
+      "date": "2026-10-06",
+      "prior_flip": 767.36,
+      "open_price": 778.15,
+      "high_price": 781.62,
+      "low_price": 777.96,
+      "close_price": 779.14,
+      "call_wall": 775.0,
+      "put_wall": 775.0,
+      "regime": "+Gamma",
+      "planned_action": "Buy Dips / Long Call",
+      "day_high_low": "$781.62 / $777.96",
+      "result": "WIN",
+      "return_proxy": 0.54,
+      "is_real_gamma": true,
+      "gamma_source": "thetadata_nexus",
+      "notes": "Tested opening dip (777.96), surged to 781.62 (>50% to Call Wall 775.00). [ThetaData Verified Options Chain]"
+    },
+    {
       "date": "2026-10-05",
       "prior_flip": 780.99,
-      "open_price": 769.69,
+      "open_price": 769.73,
       "high_price": 776.61,
-      "low_price": 769.69,
-      "close_price": 774.88,
+      "low_price": 769.63,
+      "close_price": 774.83,
       "call_wall": 770.0,
       "put_wall": 769.0,
       "regime": "-Gamma",
       "planned_action": "Breakdown / Long Put",
-      "day_high_low": "$776.61 / $769.69",
+      "day_high_low": "$776.61 / $769.63",
       "result": "LOSS",
-      "return_proxy": -2.25,
+      "return_proxy": -2.23,
       "is_real_gamma": true,
       "gamma_source": "thetadata_nexus",
       "notes": "Bear trap: failed breakdown, squeezed through 776.61. [ThetaData Verified Options Chain]"
@@ -1084,24 +1102,6 @@
       "is_real_gamma": false,
       "gamma_source": "modeled_proxy",
       "notes": "Tested opening dip (748.66), surged to 753.34 (>50% to Call Wall 752.50)."
-    },
-    {
-      "date": "2026-07-13",
-      "prior_flip": 754.07,
-      "open_price": 752.54,
-      "high_price": 753.91,
-      "low_price": 748.0,
-      "close_price": 749.17,
-      "call_wall": 760.0,
-      "put_wall": 750.0,
-      "regime": "-Gamma",
-      "planned_action": "Breakdown / Long Put",
-      "day_high_low": "$753.91 / $748.00",
-      "result": "WIN",
-      "return_proxy": 1.93,
-      "is_real_gamma": false,
-      "gamma_source": "modeled_proxy",
-      "notes": "Negative gamma cascade: printed low of 748.00 (hit Put Wall 750.00 or -0.6%)."
     }
   ]
 }

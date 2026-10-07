@@ -1,28 +1,46 @@
 {
   "symbol": "SPX",
   "total_sessions": 60,
-  "winning_days": 35,
+  "winning_days": 34,
   "losing_days": 18,
-  "scratch_days": 7,
-  "win_rate_pct": 66.0,
-  "total_win_rate_pct": 58.3,
-  "avg_return_proxy_pct": 0.18,
-  "summary_banner": "66.0% Win Rate (35W - 18L) (7 Scratches)",
+  "scratch_days": 8,
+  "win_rate_pct": 65.4,
+  "total_win_rate_pct": 56.7,
+  "avg_return_proxy_pct": 0.15,
+  "summary_banner": "65.4% Win Rate (34W - 18L) (8 Scratches)",
   "regime_stats": {
     "positive_gamma": {
-      "count": 34,
+      "count": 35,
       "wins": 22,
       "losses": 9,
       "win_rate": 71.0
     },
     "negative_gamma": {
-      "count": 26,
-      "wins": 13,
+      "count": 25,
+      "wins": 12,
       "losses": 9,
-      "win_rate": 59.1
+      "win_rate": 57.1
     }
   },
   "sessions": [
+    {
+      "date": "2026-10-06",
+      "prior_flip": 7679.15,
+      "open_price": 7805.96,
+      "high_price": 7844.52,
+      "low_price": 7805.96,
+      "close_price": 7818.93,
+      "call_wall": 8000.0,
+      "put_wall": 8000.0,
+      "regime": "+Gamma",
+      "planned_action": "Buy Dips / Long Call",
+      "day_high_low": "$7844.52 / $7805.96",
+      "result": "SCRATCH",
+      "return_proxy": 0.0,
+      "is_real_gamma": true,
+      "gamma_source": "thetadata_nexus",
+      "notes": "Gapped up and hovered; never dipped into VWAP trigger zone. [ThetaData Verified Options Chain]"
+    },
     {
       "date": "2026-10-05",
       "prior_flip": 7683.27,
@@ -1084,24 +1102,6 @@
       "is_real_gamma": false,
       "gamma_source": "modeled_proxy",
       "notes": "Tested opening dip (7513.23), surged to 7557.44 (>50% to Call Wall 7550.00)."
-    },
-    {
-      "date": "2026-07-13",
-      "prior_flip": 7566.78,
-      "open_price": 7547.53,
-      "high_price": 7565.37,
-      "low_price": 7506.41,
-      "close_price": 7515.34,
-      "call_wall": 7625.0,
-      "put_wall": 7525.0,
-      "regime": "-Gamma",
-      "planned_action": "Breakdown / Long Put",
-      "day_high_low": "$7565.37 / $7506.41",
-      "result": "WIN",
-      "return_proxy": 1.74,
-      "is_real_gamma": false,
-      "gamma_source": "modeled_proxy",
-      "notes": "Negative gamma cascade: printed low of 7506.41 (hit Put Wall 7525.00 or -0.5%)."
     }
   ]
 }
