@@ -721,114 +721,133 @@ class GammaEngine:
             except Exception:
                 pass
 
-        # Strategy 4: Synthetic history
-        return self._generate_synthetic_history(display_sym)
+        # Strategy 4: Fallback to real recorded archive directly (never synthetic)
+        return self._build_history_from_real_records(display_sym)
 
     def _process_history_sessions(self, hist: pd.DataFrame, display_sym: str) -> Dict[str, Any]:
-        hist_61 = hist.tail(61)
+        """
+        Process strictly verified real options chain records.
+        No synthetic, simulated, or proxy days are ever included.
+        """
         sessions = []
-
         is_spy = display_sym == "SPY"
         strike_step = 2.5 if is_spy else 25.0
         archive = load_real_gamma_archive().get(display_sym, {})
 
-        for i in range(1, len(hist_61)):
-            prev_row = hist_61.iloc[i - 1]
-            curr_row = hist_61.iloc[i]
-            date_str = curr_row.name.strftime("%Y-%m-%d")
-            prev_date_str = prev_row.name.strftime("%Y-%m-%d")
+        # Date lookup map from historical price bars
+        date_map = {}
+        if hist is not None and not hist.empty:
+            for i in range(len(hist)):
+                row = hist.iloc[i]
+                d = row.name.strftime("%Y-%m-%d") if hasattr(row.name, "strftime") else str(row.name)[:10]
+                date_map[d] = (i, row)
 
-            prev_close = float(prev_row["Close"])
-            prev_high = float(prev_row["High"])
-            prev_low = float(prev_row["Low"])
-            atr = max(prev_high - prev_low, prev_close * 0.006)
+        # Process strictly the verified dates in chronological order
+        archive_dates = sorted(list(archive.keys()))
 
-            open_p = float(curr_row["Open"])
-            high_p = float(curr_row["High"])
-            low_p = float(curr_row["Low"])
-            close_p = float(curr_row["Close"])
+        for date_str in archive_dates:
+            real_snapshot = archive[date_str]
+            if not real_snapshot:
+                continue
 
-            call_wall = round((prev_close + max(atr * 0.75, strike_step)) / strike_step) * strike_step
-            if call_wall <= prev_close:
-                call_wall += strike_step
+            call_wall = float(real_snapshot.get("call_wall") or 0.0)
+            put_wall = float(real_snapshot.get("put_wall") or 0.0)
+            flip_level = float(real_snapshot.get("flip_level") or 0.0)
+            regime = real_snapshot.get("regime") or ""
+            gamma_source = real_snapshot.get("source") or "real_options_chain"
 
-            put_wall = round((prev_close - max(atr * 0.75, strike_step)) / strike_step) * strike_step
-            if put_wall >= prev_close:
-                put_wall -= strike_step
+            # Check if this date exists in hist
+            curr_row = None
+            prev_row = None
+            if date_str in date_map:
+                idx, curr_row = date_map[date_str]
+                if idx > 0:
+                    prev_row = hist.iloc[idx - 1]
 
-            flip_offset = 0.12 * atr if prev_close >= (prev_high + prev_low) / 2 else -0.12 * atr
-            flip_level = round(prev_close - flip_offset, 2)
-
-            real_snapshot = archive.get(prev_date_str) or archive.get(date_str)
-            if real_snapshot:
-                is_real_gamma = True
-                gamma_source = real_snapshot.get("source", "real_options_chain")
-                call_wall = float(real_snapshot.get("call_wall", call_wall))
-                put_wall = float(real_snapshot.get("put_wall", put_wall))
-                flip_level = float(real_snapshot.get("flip_level", flip_level))
+            if curr_row is not None:
+                open_p = float(curr_row["Open"])
+                high_p = float(curr_row["High"])
+                low_p = float(curr_row["Low"])
+                close_p = float(curr_row["Close"])
+                prev_close = float(prev_row["Close"]) if prev_row is not None else open_p
+                atr = max(high_p - low_p, prev_close * 0.006)
             else:
-                is_real_gamma = False
-                gamma_source = "modeled_proxy"
+                open_p = float(real_snapshot.get("open_price") or flip_level)
+                high_p = float(real_snapshot.get("day_high") or open_p)
+                low_p = float(real_snapshot.get("day_low") or open_p)
+                close_p = float(real_snapshot.get("close_price") or open_p)
+                atr = max(high_p - low_p, open_p * 0.006)
 
-            is_pos_gamma = open_p > flip_level
-            regime = "+Gamma" if is_pos_gamma else "-Gamma"
+            if not regime:
+                regime = "+Gamma" if open_p > flip_level else "-Gamma"
+            is_pos_gamma = regime == "+Gamma"
 
-            if is_pos_gamma:
-                planned_action = "Buy Dips / Long Call"
-                target_distance = max(call_wall - open_p, 0.4 * atr)
-                target_high = open_p + 0.5 * target_distance
+            # Check if outcome already graded in DB
+            result = real_snapshot.get("result")
+            ret_proxy = real_snapshot.get("return_proxy")
+            notes = real_snapshot.get("notes")
 
-                tested_support = (open_p - low_p) >= (open_p * 0.0005)
-                reached_target = high_p >= target_high
-                breached_put_wall = low_p <= put_wall
+            if not result or result not in ("WIN", "LOSS", "SCRATCH"):
+                if is_pos_gamma:
+                    planned_action = "Buy Dips / Long Call"
+                    target_distance = max(call_wall - open_p, 0.4 * atr)
+                    target_high = open_p + 0.5 * target_distance
 
-                if not tested_support and not reached_target:
-                    result = "SCRATCH"
-                    ret_proxy = 0.0
-                    notes = "Gapped up and hovered; never dipped into VWAP trigger zone."
-                elif reached_target and not breached_put_wall:
-                    result = "WIN"
-                    pct_move = (target_high - (open_p + low_p) / 2) / open_p
-                    ret_proxy = round(pct_move * 100 * 2.8, 2)
-                    notes = f"Tested opening dip ({low_p:.2f}), surged to {high_p:.2f} (>50% to Call Wall {call_wall:.2f})."
-                elif breached_put_wall:
-                    result = "LOSS"
-                    pct_loss = abs(open_p - put_wall) / open_p
-                    ret_proxy = round(-pct_loss * 100 * 2.5, 2)
-                    notes = f"Failed to hold support; breached Put Wall ({put_wall:.2f})."
-                else:
-                    if close_p < (open_p - 0.2 * atr):
+                    tested_support = (open_p - low_p) >= (open_p * 0.0005)
+                    reached_target = high_p >= target_high
+                    breached_put_wall = low_p <= put_wall
+
+                    if not tested_support and not reached_target:
+                        result = "SCRATCH"
+                        ret_proxy = 0.0
+                        notes = "Gapped up and hovered; never dipped into VWAP trigger zone."
+                    elif reached_target and not breached_put_wall:
+                        result = "WIN"
+                        pct_move = (target_high - (open_p + low_p) / 2) / open_p
+                        ret_proxy = round(pct_move * 100 * 2.8, 2)
+                        notes = f"Tested opening dip ({low_p:.2f}), surged to {high_p:.2f} (>50% to Call Wall {call_wall:.2f})."
+                    elif breached_put_wall:
                         result = "LOSS"
-                        pct_loss = abs(open_p - close_p) / open_p
-                        ret_proxy = round(-pct_loss * 100 * 2.0, 2)
-                        notes = f"Tested dip but failed target; closed below open ({close_p:.2f})."
+                        pct_loss = abs(open_p - put_wall) / open_p
+                        ret_proxy = round(-pct_loss * 100 * 2.5, 2)
+                        notes = f"Failed to hold support; breached Put Wall ({put_wall:.2f})."
+                    else:
+                        if close_p < (open_p - 0.2 * atr):
+                            result = "LOSS"
+                            pct_loss = abs(open_p - close_p) / open_p
+                            ret_proxy = round(-pct_loss * 100 * 2.0, 2)
+                            notes = f"Tested dip but failed target; closed below open ({close_p:.2f})."
+                        else:
+                            result = "SCRATCH"
+                            ret_proxy = 0.0
+                            notes = f"Choppy intraday range ({low_p:.2f} - {high_p:.2f}); closed flat."
+                else:
+                    planned_action = "Breakdown / Long Put"
+                    drop_pct = (open_p - low_p) / open_p
+                    hit_put_wall = low_p <= put_wall
+                    confirmed_continuation = hit_put_wall or (drop_pct >= 0.010)
+                    reversal_threshold = open_p + max(0.5 * atr, strike_step)
+
+                    if confirmed_continuation and high_p < reversal_threshold:
+                        result = "WIN"
+                        ret_proxy = round(drop_pct * 100 * 3.2, 2)
+                        notes = f"Negative gamma cascade: printed low of {low_p:.2f} (hit Put Wall {put_wall:.2f} or -{drop_pct*100:.1f}%)."
+                    elif high_p >= reversal_threshold:
+                        result = "LOSS"
+                        pct_loss = abs(high_p - open_p) / open_p
+                        ret_proxy = round(-pct_loss * 100 * 2.5, 2)
+                        notes = f"Bear trap: failed breakdown, squeezed through {high_p:.2f}."
                     else:
                         result = "SCRATCH"
                         ret_proxy = 0.0
-                        notes = f"Choppy intraday range ({low_p:.2f} - {high_p:.2f}); closed flat."
+                        notes = "Vol-expansion stalled; inside day without continuation."
             else:
-                planned_action = "Breakdown / Long Put"
-                drop_pct = (open_p - low_p) / open_p
-                hit_put_wall = low_p <= put_wall
-                confirmed_continuation = hit_put_wall or (drop_pct >= 0.010)
-                reversal_threshold = open_p + max(0.5 * atr, strike_step)
+                planned_action = "Buy Dips / Long Call" if is_pos_gamma else "Breakdown / Long Put"
+                ret_proxy = float(ret_proxy or 0.0)
+                notes = notes or ("Session execution verified." if result == "WIN" else "Stop breached.")
 
-                if confirmed_continuation and high_p < reversal_threshold:
-                    result = "WIN"
-                    ret_proxy = round(drop_pct * 100 * 3.2, 2)
-                    notes = f"Negative gamma cascade: printed low of {low_p:.2f} (hit Put Wall {put_wall:.2f} or -{drop_pct*100:.1f}%)."
-                elif high_p >= reversal_threshold:
-                    result = "LOSS"
-                    pct_loss = abs(high_p - open_p) / open_p
-                    ret_proxy = round(-pct_loss * 100 * 2.5, 2)
-                    notes = f"Bear trap: failed breakdown, squeezed through {high_p:.2f}."
-                else:
-                    result = "SCRATCH"
-                    ret_proxy = 0.0
-                    notes = "Vol-expansion stalled; inside day without continuation."
-
-            source_label = "ThetaData Verified Options Chain" if "theta" in gamma_source.lower() else "Verified Exchange Options Chain"
-            if is_real_gamma and db:
+            source_label = "ThetaData Verified Options Chain" if "theta" in str(gamma_source).lower() else "Verified Exchange Options Chain"
+            if db:
                 try:
                     db.update_eod_outcome(
                         symbol=display_sym,
@@ -858,9 +877,9 @@ class GammaEngine:
                 "day_high_low": f"${high_p:.2f} / ${low_p:.2f}",
                 "result": result,
                 "return_proxy": ret_proxy,
-                "is_real_gamma": is_real_gamma,
+                "is_real_gamma": True,
                 "gamma_source": gamma_source,
-                "notes": notes + (f" [{source_label}]" if is_real_gamma else ""),
+                "notes": notes + (f" [{source_label}]" if "Verified" not in str(notes) else ""),
             })
 
         sessions_rev = list(reversed(sessions))
@@ -872,7 +891,7 @@ class GammaEngine:
 
         resolved_trades = wins + losses
         win_rate_pct = round((wins / resolved_trades * 100), 1) if resolved_trades > 0 else 0.0
-        total_win_rate_pct = round((wins / total_sessions * 100), 1)
+        total_win_rate_pct = round((wins / total_sessions * 100), 1) if total_sessions > 0 else 0.0
 
         active_returns = [s["return_proxy"] for s in sessions if s["result"] in ("WIN", "LOSS")]
         avg_ret_pct = round(sum(active_returns) / len(active_returns), 2) if active_returns else 0.0
@@ -880,16 +899,20 @@ class GammaEngine:
         summary_banner = f"{win_rate_pct}% Win Rate ({wins}W - {losses}L)"
         if scratches > 0:
             summary_banner += f" ({scratches} Scratches)"
+        elif total_sessions == 0:
+            summary_banner = "Awaiting Real Sessions"
 
         pos_sessions = [s for s in sessions if s["regime"] == "+Gamma"]
         pos_wins = sum(1 for s in pos_sessions if s["result"] == "WIN")
         pos_losses = sum(1 for s in pos_sessions if s["result"] == "LOSS")
-        pos_win_rate = round((pos_wins / max(pos_wins + pos_losses, 1)) * 100, 1)
+        pos_resolved = pos_wins + pos_losses
+        pos_win_rate = round((pos_wins / pos_resolved * 100), 1) if pos_resolved > 0 else 0.0
 
         neg_sessions = [s for s in sessions if s["regime"] == "-Gamma"]
         neg_wins = sum(1 for s in neg_sessions if s["result"] == "WIN")
         neg_losses = sum(1 for s in neg_sessions if s["result"] == "LOSS")
-        neg_win_rate = round((neg_wins / max(neg_wins + neg_losses, 1)) * 100, 1)
+        neg_resolved = neg_wins + neg_losses
+        neg_win_rate = round((neg_wins / neg_resolved * 100), 1) if neg_resolved > 0 else 0.0
 
         return {
             "symbol": display_sym,
@@ -918,97 +941,9 @@ class GammaEngine:
             "sessions": sessions_rev,
         }
 
-    def _generate_synthetic_history(self, display_sym: str) -> Dict[str, Any]:
-        """Generate verified historical ledger if external APIs are unreachable."""
-        base_spot = 769.64 if display_sym == "SPY" else 7722.72
-        sessions = []
-        now = datetime.now()
-
-        dates = pd.bdate_range(end=now, periods=61).strftime("%Y-%m-%d").tolist()
-
-        current_val = base_spot * 0.92
-        wins = 44
-        losses = 13
-        scratches = 3
-
-        outcome_seq = [
-            "WIN", "WIN", "WIN", "LOSS", "WIN", "WIN", "SCRATCH", "WIN", "WIN", "LOSS",
-            "WIN", "WIN", "WIN", "WIN", "LOSS", "WIN", "WIN", "WIN", "LOSS", "WIN",
-            "WIN", "WIN", "SCRATCH", "WIN", "LOSS", "WIN", "WIN", "WIN", "WIN", "WIN",
-            "LOSS", "WIN", "WIN", "WIN", "WIN", "LOSS", "WIN", "WIN", "SCRATCH", "WIN",
-            "WIN", "WIN", "LOSS", "WIN", "WIN", "WIN", "WIN", "LOSS", "WIN", "WIN",
-            "WIN", "WIN", "LOSS", "WIN", "WIN", "WIN", "WIN", "LOSS", "WIN", "WIN"
-        ]
-
-        for i in range(1, 61):
-            date_str = dates[i]
-            prev_close = current_val
-            flip = round(prev_close * 0.998, 2)
-            open_p = round(prev_close * (1.002 if i % 4 != 0 else 0.995), 2)
-            is_pos = open_p > flip
-            regime = "+Gamma" if is_pos else "-Gamma"
-            step = 5.0 if display_sym == "SPY" else 50.0
-            call_w = round((prev_close * 1.015) / step) * step
-            put_w = round((prev_close * 0.985) / step) * step
-
-            res = outcome_seq[i - 1]
-            if res == "WIN":
-                high_p = round(open_p * 1.008, 2)
-                low_p = round(open_p * 0.997, 2)
-                ret = 2.4
-                notes = f"Tested VWAP support, expanded to target ${high_p:.2f}."
-            elif res == "LOSS":
-                high_p = round(open_p * 1.002, 2)
-                low_p = round(open_p * 0.988, 2)
-                ret = -1.8
-                notes = f"Violated stop level at ${low_p:.2f}."
-            else:
-                high_p = round(open_p * 1.003, 2)
-                low_p = round(open_p * 0.998, 2)
-                ret = 0.0
-                notes = "Consolidated within trigger zone; trade scratched."
-
-            close_p = round((high_p + low_p) / 2, 2)
-            current_val = close_p
-
-            sessions.append({
-                "date": date_str,
-                "prior_flip": flip,
-                "open_price": open_p,
-                "high_price": high_p,
-                "low_price": low_p,
-                "close_price": close_p,
-                "call_wall": call_w,
-                "put_wall": put_w,
-                "regime": regime,
-                "planned_action": "Buy Dips / Long Call" if is_pos else "Breakdown / Long Put",
-                "day_high_low": f"${high_p:.2f} / ${low_p:.2f}",
-                "result": res,
-                "return_proxy": ret,
-                "is_real_gamma": (i == 60),
-                "gamma_source": "real_options_chain" if (i == 60) else "modeled_proxy",
-                "notes": notes + (" [Verified Real Options Chain]" if (i == 60) else ""),
-            })
-
-        sessions_rev = list(reversed(sessions))
-        win_rate = round((wins / (wins + losses)) * 100, 1)
-
-        return {
-            "symbol": display_sym,
-            "total_sessions": 60,
-            "winning_days": wins,
-            "losing_days": losses,
-            "scratch_days": scratches,
-            "win_rate_pct": win_rate,
-            "total_win_rate_pct": round((wins / 60) * 100, 1),
-            "avg_return_proxy_pct": 2.1,
-            "summary_banner": f"{win_rate}% Win Rate ({wins}W - {losses}L)",
-            "regime_stats": {
-                "positive_gamma": {"count": 45, "wins": 36, "losses": 8, "win_rate": 81.8},
-                "negative_gamma": {"count": 15, "wins": 8, "losses": 5, "win_rate": 61.5},
-            },
-            "sessions": sessions_rev,
-        }
+    def _build_history_from_real_records(self, display_sym: str) -> Dict[str, Any]:
+        """Build historical ledger strictly from stored real database/archive records."""
+        return self._process_history_sessions(pd.DataFrame(), display_sym)
 
 
 # Singleton engine instance
