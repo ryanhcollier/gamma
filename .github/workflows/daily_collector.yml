@@ -34,25 +34,10 @@ jobs:
         run: |
           python cron_collector.py
 
-      - name: 🔍 Check Hostinger FTP Secrets
-        id: check_ftp
+      - name: 🚀 Deploy API Files to Hostinger via FTP
         env:
-          FTP_HOST: ${{ secrets.HOSTINGER_FTP_HOST }}
+          HOSTINGER_FTP_HOST: ${{ secrets.HOSTINGER_FTP_HOST }}
+          HOSTINGER_FTP_USER: ${{ secrets.HOSTINGER_FTP_USER }}
+          HOSTINGER_FTP_PASS: ${{ secrets.HOSTINGER_FTP_PASS }}
         run: |
-          if [ -z "$FTP_HOST" ]; then
-            echo "::warning::HOSTINGER_FTP_HOST secret is not configured yet in GitHub Settings -> Secrets. Skipping FTP sync."
-            echo "configured=false" >> $GITHUB_OUTPUT
-          else
-            echo "configured=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: 🚀 Upload API JSON Files to Hostinger via FTP
-        if: steps.check_ftp.outputs.configured == 'true'
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.HOSTINGER_FTP_HOST }}
-          username: ${{ secrets.HOSTINGER_FTP_USER }}
-          password: ${{ secrets.HOSTINGER_FTP_PASS }}
-          local-dir: ./api/
-          server-dir: ./domains/reil.studio/public_html/gamma/api/
-          dangerous-clean-slate: false
+          python deploy_ftp.py
