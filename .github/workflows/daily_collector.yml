@@ -1,6 +1,8 @@
-name: Daily Dealer Gamma Collector
+name: Daily Dealer Gamma Collector & Hostinger Deployer
 
 on:
+  push:
+    branches: [ main ]
   schedule:
     # 9:20 AM ET (13:20 UTC Mon-Fri during EDT / 14:20 UTC during EST) - Pre-market snapshot
     - cron: '20 13 * * 1-5'
@@ -34,7 +36,7 @@ jobs:
         run: |
           python cron_collector.py
 
-      - name: 🚀 Deploy API Files to Hostinger via FTP
+      - name: 🚀 Deploy All Application & API Files to Hostinger via FTP
         env:
           HOSTINGER_FTP_HOST: ${{ secrets.HOSTINGER_FTP_HOST }}
           HOSTINGER_FTP_USER: ${{ secrets.HOSTINGER_FTP_USER }}
