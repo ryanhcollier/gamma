@@ -1,0 +1,21 @@
+# Environment & Secrets
+.env
+**/.env
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Cache and local databases
+cache/
+*.db
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Deployment archives and folders containing local credentials
+hostinger_upload/
+*.zip

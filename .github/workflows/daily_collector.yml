@@ -1,0 +1,45 @@
+name: Daily Dealer Gamma Collector
+
+on:
+  schedule:
+    # 9:20 AM ET (13:20 UTC Mon-Fri during EDT / 14:20 UTC during EST) - Pre-market gamma snapshot
+    - cron: '20 13 * * 1-5'
+    # 4:15 PM ET (20:15 UTC Mon-Fri during EDT / 21:15 UTC during EST) - Post-market outcome verification
+    - cron: '15 20 * * 1-5'
+  workflow_dispatch: # Allows manual trigger anytime from the GitHub UI for testing
+
+jobs:
+  collect-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Check out repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 📦 Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: ⚡ Run Gamma Daily Collector
+        env:
+          THETADATA_API_KEY: ${{ secrets.THETADATA_API_KEY }}
+          DB_ENGINE: sqlite
+        run: |
+          python cron_collector.py
+
+      - name: 🚀 Upload API JSON Files to Hostinger via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.HOSTINGER_FTP_HOST }}
+          username: ${{ secrets.HOSTINGER_FTP_USER }}
+          password: ${{ secrets.HOSTINGER_FTP_PASS }}
+          local-dir: ./api/
+          server-dir: ./domains/reil.studio/public_html/gamma/api/
+          dangerous-clean-slate: false

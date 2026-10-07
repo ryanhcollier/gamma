@@ -1,0 +1,22 @@
+{
+  "symbol": "SPX",
+  "spot_price": 7773.95,
+  "prior_close": 7722.72,
+  "flip_level": 7679.15,
+  "call_wall": 8000.0,
+  "put_wall": 8000.0,
+  "regime": "+Gamma",
+  "net_gamma": 19437907.0,
+  "action_text": "Market is in positive gamma ($7773.95 > $7679.15 flip). Wait for an opening dip toward VWAP, then buy 3-7 DTE calls targeting $8000.",
+  "sub_metrics": {
+    "call_wall_oi": 1815,
+    "put_wall_oi": 1257,
+    "total_call_oi": 153186,
+    "total_put_oi": 150005,
+    "gamma_ratio": 1.02,
+    "dealer_hedging": "Vol-Dampening (Mean Reverting: Buy Dips / Sell Rips)",
+    "cash_account_rule": "Settle T+1. Fixed premium risk. Exit on opening push to Call Wall or cut at VWAP violation.",
+    "updated_at": "2026-10-06T01:16:35.595423+00:00",
+    "data_source": "thetadata_nexus"
+  }
+}

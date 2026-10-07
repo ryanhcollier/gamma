@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-black text-white antialiased">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dealer Gamma | Daily Market Open Positioning</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            black: '#000000',
+            white: '#FFFFFF',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Brutalist scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #000000;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.25);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.6);
+    }
+    .selection-invert::selection {
+      background: #FFFFFF;
+      color: #000000;
+    }
+  </style>
+</head>
+<body class="bg-black text-white min-h-screen selection-invert overflow-x-hidden font-sans">
+
+  <!-- TOP-LEFT HEADER CONTROLS -->
+  <header class="fixed top-0 left-0 right-0 z-40 px-6 py-6 flex items-center justify-between pointer-events-none">
+    <div class="flex items-center space-x-5 pointer-events-auto">
+      
+      <!-- Info/Math Icon (ⓘ) -->
+      <button 
+        id="btn-info" 
+        title="Real-time Dealer Gamma Metrics & Math [I]"
+        class="opacity-30 hover:opacity-100 transition-opacity duration-200 text-white p-1 flex items-center justify-center focus:outline-none focus:opacity-100"
+        aria-label="Open Real-time Gamma Metrics">
+        <svg class="w-6 h-6 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+      </button>
+
+      <!-- Backtest/History Icon (⟲) -->
+      <button 
+        id="btn-history" 
+        title="60-Day Historical Backtest Ledger [H]"
+        class="opacity-30 hover:opacity-100 transition-opacity duration-200 text-white p-1 flex items-center justify-center focus:outline-none focus:opacity-100"
+        aria-label="Open 60-Day Backtest Ledger">
+        <svg class="w-6 h-6 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+          <path d="M3 3v5h5"></path>
+          <path d="M12 7v5l3 3"></path>
+        </svg>
+      </button>
+
+      <!-- Divider -->
+      <div class="h-4 w-[1px] bg-white/20"></div>
+
+      <!-- Symbol Switcher: SPY / SPX -->
+      <div class="flex items-center space-x-1 font-mono text-xs tracking-wider">
+        <button 
+          id="tab-spy" 
+          onclick="switchSymbol('SPY')" 
+          class="px-2.5 py-1 border border-white bg-white text-black font-semibold uppercase transition">
+          SPY
+        </button>
+        <button 
+          id="tab-spx" 
+          onclick="switchSymbol('SPX')" 
+          class="px-2.5 py-1 border border-white/30 text-white/50 hover:text-white hover:border-white uppercase transition">
+          SPX
+        </button>
+      </div>
+
+      <!-- Live / Cache Badge -->
+      <div id="status-badge" class="hidden sm:flex items-center space-x-1.5 font-mono text-[10px] uppercase tracking-widest text-neutral-400 pl-2">
+        <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="status-text">DEALER GEX ACTIVE</span>
+      </div>
+
+    </div>
+
+    <!-- Top Right: Refresh & Keyboard Helper -->
+    <div class="flex items-center space-x-3 pointer-events-auto">
+      <button 
+        id="btn-refresh" 
+        onclick="refreshData()" 
+        title="Force Refresh Data"
+        class="opacity-30 hover:opacity-100 transition-opacity duration-200 text-xs font-mono uppercase tracking-wider text-neutral-400 hover:text-white px-2 py-1 border border-white/20 hover:border-white">
+        REFRESH
+      </button>
+      <div class="hidden lg:flex items-center text-[10px] font-mono text-neutral-400 space-x-2">
+        <span>KEYS: <kbd class="text-neutral-400 border border-white/20 px-1 py-0.5">I</kbd> INFO</span>
+        <span><kbd class="text-neutral-400 border border-white/20 px-1 py-0.5">H</kbd> HISTORY</span>
+        <span><kbd class="text-neutral-400 border border-white/20 px-1 py-0.5">S</kbd> TOGGLE</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================================================== -->
+  <!-- MAIN VIEW: DEFAULT BRUTALIST FULLSCREEN TRADE COMMAND     -->
+  <!-- ======================================================== -->
+  <main id="main-view" class="h-screen w-screen flex flex-col justify-center px-8 md:px-16 lg:px-24 transition-opacity duration-300">
+    <div class="max-w-5xl">
+      
+      <!-- Regime & Spot Metadata Pill -->
+      <div class="flex flex-wrap items-center gap-3 mb-6 font-mono text-xs tracking-widest uppercase">
+        <span id="regime-tag" class="px-2.5 py-1 border border-white/40 bg-white/5 text-white font-medium">
+          LOADING REGIME...
+        </span>
+        <span class="text-neutral-400 flex items-center gap-1.5">
+          <span>SPOT:</span>
+          <span id="meta-spot" class="text-white font-semibold">---</span>
+        </span>
+        <span class="text-neutral-400 flex items-center gap-1.5">
+          <span>ZERO-FLIP:</span>
+          <span id="meta-flip" class="text-white font-semibold">---</span>
+        </span>
+        <span class="text-neutral-400 hidden sm:flex items-center gap-1.5">
+          <span>CALL WALL:</span>
+          <span id="meta-callwall" class="text-neutral-300">---</span>
+        </span>
+        <span class="text-neutral-400 hidden sm:flex items-center gap-1.5">
+          <span>PUT WALL:</span>
+          <span id="meta-putwall" class="text-neutral-300">---</span>
+        </span>
+      </div>
+
+      <!-- PRIMARY COMMAND: 1 to 2 concise sentences, 3xl to 5xl, tracking tight -->
+      <h1 
+        id="action-headline" 
+        class="text-3xl md:text-5xl lg:text-6xl font-sans font-medium tracking-tight leading-[1.15] text-white selection-invert">
+        Calculating dealer gamma positioning and cash-account open action...
+      </h1>
+
+      <!-- TWO SIDE-BY-SIDE PLAIN ENGLISH EXPLAINERS -->
+      <div class="mt-8 pt-6 border-t border-white/10 grid grid-cols-1 md:grid-cols-2 gap-8 text-neutral-400">
+        <!-- Explainer 1: The Instructions / Playbook -->
+        <div class="space-y-2">
+          <div class="text-[11px] font-mono uppercase tracking-wider text-neutral-400 flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400" id="explainer-bullet"></span>
+            <span id="explainer-inst-title">THE PLAYBOOK (PLAIN ENGLISH)</span>
+          </div>
+          <p id="explainer-instructions" class="text-neutral-300 font-sans text-xs md:text-sm leading-relaxed">
+            Market makers are currently in <span class="text-white font-medium">+Gamma</span>—they act like shock absorbers by buying dips and selling rallies. Fast crashes are unlikely today. <strong class="text-emerald-400 font-medium">What to do:</strong> Wait 5–15 minutes after the 9:30 AM open for the morning shakeout to dip toward the Zero-Flip line or VWAP, enter short-term call options on the bounce, and take your profit quickly as price approaches the Call Wall ceiling before lunch. Don't overstay.
+          </p>
+        </div>
+
+        <!-- Explainer 2: The Elements Shown on Screen -->
+        <div class="space-y-2">
+          <div class="text-[11px] font-mono uppercase tracking-wider text-neutral-400 flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-neutral-400"></span>
+            <span>WHAT THE NUMBERS MEAN</span>
+          </div>
+          <p id="explainer-elements" class="text-neutral-300 font-sans text-xs md:text-sm leading-relaxed">
+            <strong class="text-white font-medium">Spot:</strong> The live stock price right now. <strong class="text-white font-medium">Zero-Flip:</strong> The dividing line—trading above it is calm and orderly (+Gamma); slipping below triggers swift selling (-Gamma). <strong class="text-white font-medium">Call Wall:</strong> The upside ceiling where rallies stall (your take-profit target). <strong class="text-white font-medium">Put Wall:</strong> The emergency floor where price usually catches support.
+          </p>
+        </div>
+      </div>
+
+      <!-- Bottom Quick Specs Bar -->
+      <div class="mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between text-xs font-mono text-neutral-400 gap-4">
+        <div class="flex items-center space-x-6">
+          <div>
+            <span class="text-neutral-400">NET GEX:</span>
+            <span id="meta-net-gamma" class="text-white ml-1 font-medium">---</span>
+          </div>
+          <div>
+            <span class="text-neutral-400">DYNAMICS:</span>
+            <span id="meta-dynamics" class="text-neutral-300 ml-1">---</span>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <button 
+            onclick="openInfoModal()" 
+            class="text-neutral-400 hover:text-white underline underline-offset-4 decoration-white/30 hover:decoration-white transition">
+            View Metric Model &rarr;
+          </button>
+          <button 
+            onclick="openHistoryLedger()" 
+            class="text-neutral-400 hover:text-white underline underline-offset-4 decoration-white/30 hover:decoration-white transition">
+            View 60-Day Backtest Ledger &rarr;
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+
+  <!-- ======================================================== -->
+  <!-- 60-DAY BACKTEST LEDGER VIEW (FULL-SCREEN SLIDE/OVERLAY)   -->
+  <!-- ======================================================== -->
+  <section 
+    id="history-view" 
+    class="fixed inset-0 z-50 bg-black overflow-y-auto px-6 md:px-16 lg:px-24 py-12 hidden opacity-0 transition-opacity duration-200">
+    
+    <div class="max-w-6xl mx-auto">
+      
+      <!-- Back button & Title Header -->
+      <div class="flex items-center justify-between pb-8 border-b border-white/20 mb-8">
+        <div>
+          <button 
+            id="btn-back-dashboard" 
+            onclick="closeHistoryLedger()" 
+            class="inline-flex items-center space-x-2 text-xs font-mono uppercase tracking-widest text-neutral-400 hover:text-white py-1 transition group">
+            <span class="group-hover:-translate-x-1 transition-transform">&larr;</span>
+            <span>Back to Dashboard [ESC]</span>
+          </button>
+          <h2 class="text-3xl md:text-4xl font-sans font-bold tracking-tight mt-2 text-white">
+            60-Day Historical Backtest Ledger &mdash; <span id="hist-current-symbol" class="text-white">SPY</span>
+          </h2>
+          <p class="text-xs font-mono text-neutral-400 uppercase tracking-widest mt-1">
+            Pre-Market Gamma Levels ($T-1$) vs Day $T$ Cash-Account Execution Accuracy
+          </p>
+          <div class="flex flex-wrap items-center gap-3 mt-2.5 text-[11px] font-mono">
+            <span class="inline-flex items-center space-x-1.5 text-emerald-400">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-emerald-400/80 bg-emerald-950/40 text-emerald-300 text-[9px] font-bold">
+                <svg class="w-3 h-3 text-emerald-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <span>REAL</span>
+              </span>
+              <span class="text-neutral-300">Verified Real Options Chain Gamma</span>
+            </span>
+            <span class="text-neutral-600">|</span>
+            <span class="text-neutral-400">Unbadged dates = Modeled Proxy Simulation</span>
+          </div>
+        </div>
+
+        <!-- Symbol switcher in history view -->
+        <div class="flex items-center space-x-2 font-mono text-xs">
+          <button 
+            id="hist-tab-spy" 
+            onclick="switchSymbol('SPY')" 
+            class="px-3 py-1.5 border border-white bg-white text-black font-bold uppercase transition">
+            SPY
+          </button>
+          <button 
+            id="hist-tab-spx" 
+            onclick="switchSymbol('SPX')" 
+            class="px-3 py-1.5 border border-white/30 text-white/50 hover:text-white uppercase transition">
+            SPX
+          </button>
+        </div>
+      </div>
+
+      <!-- SUMMARY BANNER AT TOP -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 border border-white/20 bg-white/[0.02] mb-8 font-mono">
+        <div class="border-r border-white/10 pr-4">
+          <div class="text-[11px] uppercase tracking-widest text-neutral-400">Execution Win Rate</div>
+          <div id="hist-winrate" class="text-2xl md:text-3xl font-bold text-white mt-1">---</div>
+          <div id="hist-record" class="text-xs text-neutral-400 mt-0.5">--W - --L</div>
+        </div>
+
+        <div class="border-r border-white/10 pr-4 pl-2">
+          <div class="text-[11px] uppercase tracking-widest text-neutral-400">Total Samples</div>
+          <div id="hist-samples" class="text-2xl md:text-3xl font-bold text-white mt-1">60</div>
+          <div id="hist-real-count" class="text-xs text-emerald-400 mt-0.5 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>-- Real Gamma Days</span>
+          </div>
+        </div>
+
+        <div class="border-r border-white/10 pr-4 pl-2">
+          <div class="text-[11px] uppercase tracking-widest text-neutral-400">Avg Return Proxy</div>
+          <div id="hist-avg-ret" class="text-2xl md:text-3xl font-bold text-white mt-1">---</div>
+          <div class="text-xs text-neutral-400 mt-0.5">Per Triggered Session</div>
+        </div>
+
+        <div class="pl-2">
+          <div class="text-[11px] uppercase tracking-widest text-neutral-400">Regime Performance</div>
+          <div id="hist-regime-split" class="text-xs text-neutral-300 mt-2 space-y-1">
+            <div>+Gamma: <span id="hist-pos-rate" class="text-white font-semibold">--%</span></div>
+            <div>-Gamma: <span id="hist-neg-rate" class="text-white font-semibold">--%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTER CONTROLS -->
+      <div class="flex items-center justify-between mb-4 font-mono text-xs">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-neutral-400 uppercase tracking-widest mr-1">Filter:</span>
+          <button onclick="filterHistory('ALL')" id="flt-all" class="px-2.5 py-1 border border-white bg-white text-black font-bold uppercase transition">ALL (<span id="cnt-all">60</span>)</button>
+          <button onclick="filterHistory('WIN')" id="flt-win" class="px-2.5 py-1 border border-white/20 text-neutral-400 hover:text-white uppercase transition">WINS (<span id="cnt-win">--</span>)</button>
+          <button onclick="filterHistory('LOSS')" id="flt-loss" class="px-2.5 py-1 border border-white/20 text-neutral-400 hover:text-white uppercase transition">LOSSES (<span id="cnt-loss">--</span>)</button>
+          <button onclick="filterHistory('SCRATCH')" id="flt-scratch" class="px-2.5 py-1 border border-white/20 text-neutral-400 hover:text-white uppercase transition">SCRATCH (<span id="cnt-scratch">--</span>)</button>
+          <button onclick="filterHistory('REAL')" id="flt-real" class="px-2.5 py-1 border border-emerald-400/40 text-emerald-400 hover:border-emerald-400 hover:text-white uppercase transition">REAL DATA (<span id="cnt-real">--</span>)</button>
+        </div>
+        <div class="text-neutral-400 hidden sm:block">Click any row to view trade notes</div>
+      </div>
+
+      <!-- BACKTEST LEDGER TABLE -->
+      <div class="border border-white/20 overflow-x-auto">
+        <table class="w-full text-left font-mono text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-white/20 bg-white/5 uppercase text-neutral-400 tracking-wider">
+              <th class="py-3 px-4">Date</th>
+              <th class="py-3 px-4">Prior Flip ($T-1$)</th>
+              <th class="py-3 px-4">Open Price</th>
+              <th class="py-3 px-4">Regime</th>
+              <th class="py-3 px-4">Planned Action</th>
+              <th class="py-3 px-4">Day High / Low</th>
+              <th class="py-3 px-4 text-center">Result</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody" class="divide-y divide-white/10">
+            <tr>
+              <td colspan="7" class="py-8 text-center text-neutral-400">Loading historical execution log...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-6 text-center">
+        <button 
+          onclick="closeHistoryLedger()" 
+          class="px-6 py-2.5 border border-white/40 hover:border-white font-mono text-xs uppercase tracking-widest text-white hover:bg-white hover:text-black transition">
+          &larr; Return to Live Trade Command
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ======================================================== -->
+  <!-- REAL-TIME GAMMA METRICS & MATH MODAL (SLIDE-OVER / MODAL) -->
+  <!-- ======================================================== -->
+  <aside 
+    id="info-modal" 
+    class="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-black border-l border-white/30 transform translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto p-8 shadow-2xl"
+    aria-hidden="true">
+    
+    <div class="flex items-center justify-between pb-6 border-b border-white/20 mb-6">
+      <div class="flex items-center space-x-3">
+        <span class="text-lg font-mono text-white">&#9432;</span>
+        <h3 class="text-xl font-sans font-bold tracking-tight uppercase">Dealer Gamma Architecture</h3>
+      </div>
+      <button 
+        id="btn-close-info" 
+        onclick="closeInfoModal()" 
+        title="Close Overlay [ESC]"
+        class="text-neutral-400 hover:text-white p-1 text-lg font-mono transition">
+        ✕
+      </button>
+    </div>
+
+    <!-- Live Parameters Grid -->
+    <div class="space-y-6">
+      
+      <!-- Metrics Table Card -->
+      <div class="border border-white/20 p-5 bg-white/[0.02]">
+        <div class="flex items-center justify-between text-xs font-mono uppercase tracking-widest text-neutral-400 mb-4">
+          <span>Today's Real-Time Metrics (<span id="info-symbol">SPY</span>)</span>
+          <span id="info-updated" class="text-[10px] text-neutral-400">--:-- UTC</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 font-mono text-xs">
+          <div class="p-3 border border-white/10">
+            <span class="text-neutral-400 block text-[10px] uppercase">Spot Price</span>
+            <span id="info-spot" class="text-xl font-bold text-white mt-1 block">---</span>
+          </div>
+
+          <div class="p-3 border border-white/10">
+            <span class="text-neutral-400 block text-[10px] uppercase">Zero-Gamma Flip</span>
+            <span id="info-flip" class="text-xl font-bold text-white mt-1 block">---</span>
+          </div>
+
+          <div class="p-3 border border-white/10">
+            <span class="text-neutral-400 block text-[10px] uppercase">Call Wall (Resistance)</span>
+            <div class="flex items-baseline justify-between mt-1">
+              <span id="info-callwall" class="text-base font-bold text-white">---</span>
+              <span id="info-callwall-oi" class="text-[10px] text-neutral-400">-- OI</span>
+            </div>
+          </div>
+
+          <div class="p-3 border border-white/10">
+            <span class="text-neutral-400 block text-[10px] uppercase">Put Wall (Support)</span>
+            <div class="flex items-baseline justify-between mt-1">
+              <span id="info-putwall" class="text-base font-bold text-white">---</span>
+              <span id="info-putwall-oi" class="text-[10px] text-neutral-400">-- OI</span>
+            </div>
+          </div>
+
+          <div class="col-span-2 p-3 border border-white/10">
+            <span class="text-neutral-400 block text-[10px] uppercase">Net Gamma & Stance</span>
+            <div class="flex items-center justify-between mt-1">
+              <span id="info-net-gamma" class="text-base font-bold text-white">---</span>
+              <span id="info-regime-badge" class="px-2 py-0.5 border border-white/30 text-[10px] font-bold uppercase">---</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hedging Dynamics Card -->
+      <div class="border border-white/20 p-5 bg-white/[0.02]">
+        <h4 class="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-2">Dealer Hedging Mechanism</h4>
+        <div id="info-hedging-desc" class="text-sm text-neutral-200 leading-relaxed font-sans">
+          Loading market hedging mechanics...
+        </div>
+      </div>
+
+      <!-- Cash Account Rules -->
+      <div class="border border-white/20 p-5 bg-white/[0.02]">
+        <h4 class="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-2">Cash Account Open Blueprint</h4>
+        <div id="info-cash-rule" class="text-sm text-neutral-200 leading-relaxed font-sans">
+          Loading cash account trade management rules...
+        </div>
+      </div>
+
+      <!-- Mathematical Formulation -->
+      <div class="border border-white/20 p-5 bg-white/[0.02] font-mono text-xs space-y-3">
+        <h4 class="uppercase tracking-widest text-neutral-400">Quantitative Formulation</h4>
+        <p class="text-neutral-300 leading-relaxed">
+          Dealer gamma is derived by weighting Black-Scholes gamma $\Gamma$ by strike open interest across near-term expirations:
+        </p>
+        <div class="p-3 bg-black border border-white/10 text-white font-mono text-[11px] overflow-x-auto">
+          &Gamma;(S) = &sum; Call_OI &times; &Gamma;_C(S) &times; S &times; 100 - &sum; Put_OI &times; &Gamma;_P(S) &times; S &times; 100
+        </div>
+        <p class="text-neutral-400 text-[11px] leading-relaxed">
+          The <span class="text-white">Zero-Gamma Flip Level</span> $S^*$ solves &Gamma;(S^*) = 0. When Spot &gt; Flip, dealers are long gamma, trading counter-trend to compress volatility. When Spot &lt; Flip, dealers are short gamma, forced to sell declining assets, triggering violent directional continuations.
+        </p>
+      </div>
+
+      <div class="pt-4 text-center">
+        <button 
+          onclick="closeInfoModal()" 
+          class="w-full py-2.5 border border-white/30 hover:border-white text-xs font-mono uppercase tracking-widest text-white transition">
+          Close Technical Breakdown [ESC]
+        </button>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- MODAL BACKDROP (for Info overlay) -->
+  <div 
+    id="modal-backdrop" 
+    onclick="closeAllOverlays()" 
+    class="fixed inset-0 z-40 bg-black/75 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+  </div>
+
+  <!-- SESSION DETAIL / TRADE NOTES MODAL BACKDROP -->
+  <div 
+    id="session-modal-backdrop" 
+    onclick="closeSessionModal()" 
+    class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+  </div>
+
+  <!-- SESSION DETAIL / TRADE NOTES MODAL DIALOG -->
+  <div 
+    id="session-modal" 
+    onclick="handleModalBackdropClick(event)"
+    class="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6 hidden opacity-0 transition-all duration-200"
+    role="dialog" 
+    aria-modal="true">
+    
+    <div onclick="event.stopPropagation()" class="w-full max-w-2xl bg-black border border-white/30 p-6 md:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+      
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between border-b border-white/20 pb-4">
+        <div>
+          <div class="flex flex-wrap items-center gap-2.5">
+            <h3 id="session-modal-date" class="text-2xl font-sans font-bold tracking-tight text-white">
+              ---
+            </h3>
+            <span id="session-modal-source-badge"></span>
+          </div>
+          <p id="session-modal-source-desc" class="text-xs font-mono text-neutral-400 mt-1">
+            ---
+          </p>
+        </div>
+
+        <button 
+          id="btn-close-session-modal"
+          onclick="closeSessionModal()" 
+          class="text-neutral-400 hover:text-white p-1 text-lg font-mono transition" 
+          title="Close [ESC]">
+          ✕
+        </button>
+      </div>
+
+      <!-- Quick Metrics Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
+        <div class="p-3 border border-white/10 bg-white/[0.02]">
+          <span class="text-neutral-400 block text-[10px] uppercase">Open Price</span>
+          <span id="session-modal-open" class="text-base font-bold text-white mt-1 block">---</span>
+        </div>
+
+        <div class="p-3 border border-white/10 bg-white/[0.02]">
+          <span class="text-neutral-400 block text-[10px] uppercase">Prior Flip ($T-1$)</span>
+          <span id="session-modal-flip" class="text-base font-bold text-white mt-1 block">---</span>
+        </div>
+
+        <div class="p-3 border border-white/10 bg-white/[0.02]">
+          <span class="text-neutral-400 block text-[10px] uppercase">Regime</span>
+          <span id="session-modal-regime" class="text-base font-bold text-emerald-400 mt-1 block">---</span>
+        </div>
+
+        <div class="p-3 border border-white/10 bg-white/[0.02]">
+          <span class="text-neutral-400 block text-[10px] uppercase">Result &amp; Return</span>
+          <div class="flex items-center gap-2 mt-1">
+            <span id="session-modal-result" class="font-bold text-white">---</span>
+            <span id="session-modal-return" class="text-[11px] text-neutral-400">---</span>
+          </div>
+        </div>
+
+        <div class="p-3 border border-white/10 bg-white/[0.02]">
+          <span class="text-neutral-400 block text-[10px] uppercase">Call Wall</span>
+          <span id="session-modal-callwall" class="text-sm font-semibold text-neutral-200 mt-1 block">---</span>
+        </div>
+
+        <div class="p-3 border border-white/10 bg-white/[0.02]">
+          <span class="text-neutral-400 block text-[10px] uppercase">Put Wall</span>
+          <span id="session-modal-putwall" class="text-sm font-semibold text-neutral-200 mt-1 block">---</span>
+        </div>
+
+        <div class="col-span-2 p-3 border border-white/10 bg-white/[0.02]">
+          <span class="text-neutral-400 block text-[10px] uppercase">Day High / Low Range</span>
+          <span id="session-modal-range" class="text-sm font-semibold text-neutral-200 mt-1 block">---</span>
+        </div>
+      </div>
+
+      <!-- Planned Strategy -->
+      <div class="p-4 border border-white/10 bg-white/[0.02]">
+        <div class="text-[10px] font-mono uppercase tracking-widest text-neutral-400 mb-1">Planned Market Open Setup</div>
+        <div id="session-modal-plan" class="text-sm font-medium text-white">
+          ---
+        </div>
+      </div>
+
+      <!-- Detailed Execution Log / Notes -->
+      <div class="p-4 border border-white/15 bg-black font-mono text-xs space-y-2">
+        <div class="flex items-center justify-between text-neutral-400 text-[10px] uppercase tracking-wider border-b border-white/10 pb-2">
+          <span>Execution Log &amp; Post-Trade Notes</span>
+          <span class="text-neutral-400">Cash Account Rules</span>
+        </div>
+        <div id="session-modal-notes" class="text-neutral-200 text-sm leading-relaxed whitespace-pre-line pt-1">
+          ---
+        </div>
+      </div>
+
+      <!-- Close Button -->
+      <div class="pt-2">
+        <button 
+          onclick="closeSessionModal()" 
+          class="w-full py-2.5 border border-white/30 hover:border-white text-xs font-mono uppercase tracking-widest text-white hover:bg-white hover:text-black transition">
+          Close Trade Notes [ESC]
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <script>
+    let currentSymbol = 'SPY';
+    let currentActionData = null;
+    let currentHistoryData = null;
+    let currentHistoryFilter = 'ALL';
+
+    // Elements
+    const mainView = document.getElementById('main-view');
+    const historyView = document.getElementById('history-view');
+    const infoModal = document.getElementById('info-modal');
+    const modalBackdrop = document.getElementById('modal-backdrop');
+    const sessionModal = document.getElementById('session-modal');
+    const sessionModalBackdrop = document.getElementById('session-modal-backdrop');
+
+    // Dynamic base path support for subpaths (e.g. /gamma)
+    const API_BASE = (function() {
+      const cleanPath = window.location.pathname.replace(/\/index\.html$/i, '').replace(/\/+$/, '');
+      return cleanPath ? cleanPath + '/api' : '/api';
+    })();
+
+    async function loadAction(symbol, refresh = false) {
+      const encodedSym = encodeURIComponent(symbol);
+      let data = null;
+      try {
+        // Try dynamic FastAPI endpoint first
+        const dynamicUrl = `${API_BASE}/action?symbol=${encodedSym}${refresh ? '&refresh=true' : ''}`;
+        const res = await fetch(dynamicUrl);
+        if (res.ok) {
+          data = await res.json();
+        }
+      } catch (e) {
+        // Ignore and try static fallback
+      }
+
+      // If dynamic endpoint unavailable, try pre-computed static JSON (No SSH needed!)
+      if (!data) {
+        try {
+          const staticUrl = `${API_BASE}/action_${encodedSym}.json?t=${Date.now()}`;
+          const res = await fetch(staticUrl);
+          if (res.ok) {
+            data = await res.json();
+          }
+        } catch (e) {
+          console.error('Static fetch failed:', e);
+        }
+      }
+
+      if (data) {
+        currentActionData = data;
+        renderAction(data);
+      } else {
+        document.getElementById('action-headline').innerText = 
+          'Market positioning data temporarily unavailable. Check backend connection.';
+      }
+    }
+
+    async function loadHistory(symbol, refresh = false) {
+      const encodedSym = encodeURIComponent(symbol);
+      let data = null;
+      try {
+        const dynamicUrl = `${API_BASE}/history?symbol=${encodedSym}${refresh ? '&refresh=true' : ''}`;
+        const res = await fetch(dynamicUrl);
+        if (res.ok) {
+          data = await res.json();
+        }
+      } catch (e) {
+        // Ignore and try static fallback
+      }
+
+      if (!data) {
+        try {
+          const staticUrl = `${API_BASE}/history_${encodedSym}.json?t=${Date.now()}`;
+          const res = await fetch(staticUrl);
+          if (res.ok) {
+            data = await res.json();
+          }
+        } catch (e) {
+          console.error('Static history fetch failed:', e);
+        }
+      }
+
+      if (data) {
+        currentHistoryData = data;
+        renderHistory(data);
+      }
+    }
+
+    function renderAction(data) {
+      document.getElementById('action-headline').innerText = data.action_text;
+      
+      const isPos = data.regime === '+Gamma';
+      const regimeEl = document.getElementById('regime-tag');
+      regimeEl.innerText = `${data.symbol} ${data.regime} REGIME`;
+      if (isPos) {
+        regimeEl.className = 'px-2.5 py-1 border border-emerald-400/80 bg-emerald-950/20 text-emerald-300 font-bold';
+      } else {
+        regimeEl.className = 'px-2.5 py-1 border border-red-500/80 bg-red-950/20 text-red-300 font-bold';
+      }
+
+      document.getElementById('meta-spot').innerText = `$${data.spot_price.toFixed(2)}`;
+      document.getElementById('meta-flip').innerText = `$${data.flip_level.toFixed(2)}`;
+      document.getElementById('meta-callwall').innerText = `$${data.call_wall.toFixed(2)}`;
+      document.getElementById('meta-putwall').innerText = `$${data.put_wall.toFixed(2)}`;
+
+      const netGexM = (data.net_gamma / 1e6).toFixed(1);
+      const sign = data.net_gamma >= 0 ? '+' : '';
+      document.getElementById('meta-net-gamma').innerText = `${sign}$${netGexM}M`;
+      document.getElementById('meta-dynamics').innerText = isPos ? 'Vol-Dampening (Buy Dips)' : 'Vol-Expanding (Downside Cascade)';
+
+      // Update Explainer Paragraphs
+      const instEl = document.getElementById('explainer-instructions');
+      const bulletEl = document.getElementById('explainer-bullet');
+      const instTitleEl = document.getElementById('explainer-inst-title');
+      const elemEl = document.getElementById('explainer-elements');
+
+      if (isPos) {
+        if (bulletEl) bulletEl.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
+        if (instTitleEl) instTitleEl.innerText = "THE PLAYBOOK (PLAIN ENGLISH)";
+        if (instEl) {
+          instEl.innerHTML = `Big institutions are in <span class="text-white font-medium">+Gamma</span>—acting like shock absorbers by buying dips and selling rallies. Fast crashes are rare in this mode. <strong class="text-emerald-400 font-medium">How to play it:</strong> Wait 5–15 min after the 9:30 AM open for an opening dip down toward the Zero-Flip ($${data.flip_level.toFixed(2)}) or VWAP. Enter short-term call options on the bounce, and take your profit quickly as price heads toward the Call Wall ceiling ($${data.call_wall.toFixed(2)}).`;
+        }
+      } else {
+        if (bulletEl) bulletEl.className = 'w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse';
+        if (instTitleEl) instTitleEl.innerText = "DEFENSIVE PLAYBOOK (PLAIN ENGLISH)";
+        if (instEl) {
+          instEl.innerHTML = `Big institutions are in <span class="text-white font-medium">-Gamma</span>—acting like accelerant on a fire, dumping stock as prices fall and amplifying market drops. <strong class="text-red-400 font-medium">How to play it:</strong> Price is below the Zero-Flip ($${data.flip_level.toFixed(2)}). Either scalp quick put options on failed bounces down toward the Put Wall ($${data.put_wall.toFixed(2)}), or stay safely in cash. Do not buy dips until price reclaims the flip line.`;
+        }
+      }
+
+      if (elemEl) {
+        elemEl.innerHTML = `<strong class="text-white font-medium">Spot ($${data.spot_price.toFixed(2)}):</strong> The live market price right now. <strong class="text-white font-medium">Zero-Flip ($${data.flip_level.toFixed(2)}):</strong> The dividing line—trading above it is calm and orderly (+Gamma); slipping below triggers swift selling (-Gamma). <strong class="text-white font-medium">Call Wall ($${data.call_wall.toFixed(2)}):</strong> The upside ceiling where rallies stall (your take-profit target). <strong class="text-white font-medium">Put Wall ($${data.put_wall.toFixed(2)}):</strong> The emergency floor where price usually catches support.`;
+      }
+
+      // Info Modal Populating
+      document.getElementById('info-symbol').innerText = data.symbol;
+      document.getElementById('info-spot').innerText = `$${data.spot_price.toFixed(2)}`;
+      document.getElementById('info-flip').innerText = `$${data.flip_level.toFixed(2)}`;
+      document.getElementById('info-callwall').innerText = `$${data.call_wall.toFixed(2)}`;
+      document.getElementById('info-putwall').innerText = `$${data.put_wall.toFixed(2)}`;
+      document.getElementById('info-callwall-oi').innerText = `${(data.sub_metrics?.call_wall_oi || 0).toLocaleString()} OI`;
+      document.getElementById('info-putwall-oi').innerText = `${(data.sub_metrics?.put_wall_oi || 0).toLocaleString()} OI`;
+      document.getElementById('info-net-gamma').innerText = `${sign}$${netGexM}M GEX`;
+
+      const infoBadge = document.getElementById('info-regime-badge');
+      infoBadge.innerText = data.regime;
+      infoBadge.className = isPos 
+        ? 'px-2 py-0.5 border border-emerald-400 text-emerald-300 text-[10px] font-bold uppercase' 
+        : 'px-2 py-0.5 border border-red-400 text-red-300 text-[10px] font-bold uppercase';
+
+      document.getElementById('info-hedging-desc').innerText = data.sub_metrics?.dealer_hedging || '';
+      document.getElementById('info-cash-rule').innerText = data.sub_metrics?.cash_account_rule || '';
+      
+      if (data.sub_metrics?.updated_at) {
+        const d = new Date(data.sub_metrics.updated_at);
+        document.getElementById('info-updated').innerText = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+      }
+    }
+
+    function renderHistory(data) {
+      document.getElementById('hist-winrate').innerText = `${data.win_rate_pct}%`;
+      document.getElementById('hist-record').innerText = `${data.winning_days}W - ${data.losing_days}L (${data.scratch_days} Scratches)`;
+      document.getElementById('hist-samples').innerText = data.total_sessions;
+      document.getElementById('hist-avg-ret').innerText = `${data.avg_return_proxy_pct >= 0 ? '+' : ''}${data.avg_return_proxy_pct}%`;
+
+      if (data.regime_stats) {
+        document.getElementById('hist-pos-rate').innerText = `${data.regime_stats.positive_gamma.win_rate}% (${data.regime_stats.positive_gamma.wins}W/${data.regime_stats.positive_gamma.count})`;
+        document.getElementById('hist-neg-rate').innerText = `${data.regime_stats.negative_gamma.win_rate}% (${data.regime_stats.negative_gamma.wins}W/${data.regime_stats.negative_gamma.count})`;
+      }
+
+      document.getElementById('cnt-all').innerText = data.total_sessions;
+      document.getElementById('cnt-win').innerText = data.winning_days;
+      document.getElementById('cnt-loss').innerText = data.losing_days;
+      document.getElementById('cnt-scratch').innerText = data.scratch_days;
+
+      const realCount = data.sessions.filter(s => s.is_real_gamma).length;
+      const cntRealEl = document.getElementById('cnt-real');
+      if (cntRealEl) cntRealEl.innerText = realCount;
+      const histRealCountEl = document.getElementById('hist-real-count');
+      if (histRealCountEl) {
+        histRealCountEl.innerHTML = `
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>${realCount} Verified Real Gamma Day${realCount === 1 ? '' : 's'}</span>
+        `;
+      }
+
+      renderHistoryRows();
+    }
+
+    function renderHistoryRows() {
+      if (!currentHistoryData || !currentHistoryData.sessions) return;
+      const tbody = document.getElementById('history-tbody');
+      tbody.innerHTML = '';
+
+      let list = currentHistoryData.sessions;
+      if (currentHistoryFilter === 'REAL') {
+        list = list.filter(s => s.is_real_gamma);
+      } else if (currentHistoryFilter !== 'ALL') {
+        list = list.filter(s => s.result === currentHistoryFilter);
+      }
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-neutral-400">No sessions match the selected filter.</td></tr>';
+        return;
+      }
+
+      list.forEach((s, idx) => {
+        const tr = document.createElement('tr');
+        tr.id = `hist-row-${idx}`;
+        tr.className = 'hover:bg-white/[0.06] transition cursor-pointer group select-none border-b border-white/10';
+        tr.setAttribute('data-date', s.date);
+        tr.setAttribute('data-index', idx);
+        tr.setAttribute('role', 'button');
+        tr.setAttribute('tabindex', '0');
+
+        let badgeClass = '';
+        if (s.result === 'WIN') {
+          badgeClass = 'bg-white text-black font-bold px-2 py-0.5 text-[10px] tracking-wider';
+        } else if (s.result === 'LOSS') {
+          badgeClass = 'border border-red-500/80 text-red-400 font-bold px-2 py-0.5 text-[10px] tracking-wider';
+        } else {
+          badgeClass = 'border border-neutral-600 text-neutral-400 font-medium px-2 py-0.5 text-[10px] tracking-wider';
+        }
+
+        const regimeColor = s.regime === '+Gamma' ? 'text-emerald-400' : 'text-red-400';
+
+        const realIconHtml = s.is_real_gamma ? `
+          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-emerald-400/80 bg-emerald-950/60 text-emerald-300 text-[9px] font-mono tracking-wider font-bold group-hover:border-emerald-300 transition shadow-[0_0_10px_rgba(52,211,153,0.2)]">
+            <svg class="w-3 h-3 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span>REAL</span>
+          </span>
+        ` : '';
+
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-bold text-white whitespace-nowrap">
+            <div class="inline-flex items-center gap-2">
+              <span class="group-hover:text-emerald-300 transition-colors">${s.date}</span>
+              ${realIconHtml}
+            </div>
+          </td>
+          <td class="py-3 px-4 text-neutral-300">$${s.prior_flip.toFixed(2)}</td>
+          <td class="py-3 px-4 text-white font-medium">$${s.open_price.toFixed(2)}</td>
+          <td class="py-3 px-4 ${regimeColor} font-semibold">${s.regime}</td>
+          <td class="py-3 px-4 text-neutral-300 font-sans text-xs">${s.planned_action}</td>
+          <td class="py-3 px-4 text-neutral-400">${s.day_high_low}</td>
+          <td class="py-3 px-4 text-center">
+            <div class="flex flex-col items-center gap-1">
+              <span class="inline-block ${badgeClass}">${s.result}</span>
+              <span class="text-[9px] text-neutral-400 group-hover:text-white transition tracking-widest uppercase">View Notes &rarr;</span>
+            </div>
+          </td>
+        `;
+
+        // Click to expand custom Trade Notes modal
+        tr.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          showSessionDetail(s);
+        });
+
+        tr.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            showSessionDetail(s);
+          }
+        });
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function handleModalBackdropClick(e) {
+      if (e.target === sessionModal) {
+        closeSessionModal();
+      }
+    }
+
+    function showSessionDetail(s) {
+      if (!s) return;
+      document.getElementById('session-modal-date').innerText = s.date;
+
+      const sourceBadgeEl = document.getElementById('session-modal-source-badge');
+      const sourceDescEl = document.getElementById('session-modal-source-desc');
+
+      if (s.is_real_gamma) {
+        sourceBadgeEl.innerHTML = `
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 border border-emerald-400/80 bg-emerald-950/60 text-emerald-300 text-[10px] font-mono tracking-wider font-bold">
+            <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span>REAL GAMMA DATA</span>
+          </span>
+        `;
+        sourceDescEl.innerHTML = `<span class="text-emerald-400 font-semibold">Verified Exchange Options Chain:</span> Calculated directly from real live open interest &amp; strikes.`;
+      } else {
+        sourceBadgeEl.innerHTML = `
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 border border-white/20 bg-white/5 text-neutral-400 text-[10px] font-mono tracking-wider">
+            <span>MODELED PROXY</span>
+          </span>
+        `;
+        sourceDescEl.innerText = 'Pre-market levels modeled from prior close, ATR volatility, and standard strike pinning.';
+      }
+
+      document.getElementById('session-modal-open').innerText = `$${s.open_price.toFixed(2)}`;
+      document.getElementById('session-modal-flip').innerText = `$${s.prior_flip.toFixed(2)}`;
+      
+      const regimeEl = document.getElementById('session-modal-regime');
+      regimeEl.innerText = s.regime;
+      regimeEl.className = s.regime === '+Gamma' 
+        ? 'text-base font-bold text-emerald-400 mt-1 block' 
+        : 'text-base font-bold text-red-400 mt-1 block';
+
+      const resEl = document.getElementById('session-modal-result');
+      resEl.innerText = s.result;
+      if (s.result === 'WIN') {
+        resEl.className = 'font-bold px-1.5 py-0.5 bg-white text-black text-[10px]';
+      } else if (s.result === 'LOSS') {
+        resEl.className = 'font-bold px-1.5 py-0.5 border border-red-500 text-red-400 text-[10px]';
+      } else {
+        resEl.className = 'font-medium px-1.5 py-0.5 border border-neutral-600 text-neutral-400 text-[10px]';
+      }
+
+      const retSign = s.return_proxy >= 0 ? '+' : '';
+      document.getElementById('session-modal-return').innerText = `(${retSign}${s.return_proxy}%)`;
+      document.getElementById('session-modal-callwall').innerText = `$${s.call_wall.toFixed(2)}`;
+      document.getElementById('session-modal-putwall').innerText = `$${s.put_wall.toFixed(2)}`;
+      document.getElementById('session-modal-range').innerText = s.day_high_low;
+      document.getElementById('session-modal-plan').innerText = s.planned_action;
+      document.getElementById('session-modal-notes').innerText = s.notes || 'No additional trade notes recorded for this session.';
+
+      sessionModalBackdrop.classList.remove('hidden');
+      sessionModal.classList.remove('hidden');
+      void sessionModal.offsetWidth;
+      requestAnimationFrame(() => {
+        sessionModalBackdrop.classList.remove('opacity-0');
+        sessionModal.classList.remove('opacity-0');
+      });
+    }
+
+    function closeSessionModal() {
+      sessionModalBackdrop.classList.add('opacity-0');
+      sessionModal.classList.add('opacity-0');
+      setTimeout(() => {
+        sessionModalBackdrop.classList.add('hidden');
+        sessionModal.classList.add('hidden');
+      }, 200);
+    }
+
+    function filterHistory(type) {
+      currentHistoryFilter = type;
+      const buttons = ['ALL', 'WIN', 'LOSS', 'SCRATCH', 'REAL'];
+      buttons.forEach(b => {
+        const el = document.getElementById(`flt-${b.toLowerCase()}`);
+        if (!el) return;
+        if (b === type) {
+          if (b === 'REAL') {
+            el.className = 'px-2.5 py-1 border border-emerald-400 bg-emerald-400 text-black font-bold uppercase transition';
+          } else {
+            el.className = 'px-2.5 py-1 border border-white bg-white text-black font-bold uppercase transition';
+          }
+        } else {
+          if (b === 'REAL') {
+            el.className = 'px-2.5 py-1 border border-emerald-400/40 text-emerald-400 hover:border-emerald-400 hover:text-white uppercase transition';
+          } else {
+            el.className = 'px-2.5 py-1 border border-white/20 text-neutral-400 hover:text-white uppercase transition';
+          }
+        }
+      });
+      renderHistoryRows();
+    }
+
+    function switchSymbol(symbol) {
+      currentSymbol = symbol;
+      
+      // Update header buttons
+      const isSpy = symbol === 'SPY';
+      document.getElementById('tab-spy').className = isSpy
+        ? 'px-2.5 py-1 border border-white bg-white text-black font-semibold uppercase transition'
+        : 'px-2.5 py-1 border border-white/30 text-white/50 hover:text-white uppercase transition';
+      document.getElementById('tab-spx').className = !isSpy
+        ? 'px-2.5 py-1 border border-white bg-white text-black font-semibold uppercase transition'
+        : 'px-2.5 py-1 border border-white/30 text-white/50 hover:text-white uppercase transition';
+
+      // Update history buttons
+      const histTabSpy = document.getElementById('hist-tab-spy');
+      const histTabSpx = document.getElementById('hist-tab-spx');
+      if (histTabSpy) {
+        histTabSpy.className = isSpy
+          ? 'px-3 py-1.5 border border-white bg-white text-black font-bold uppercase transition'
+          : 'px-3 py-1.5 border border-white/30 text-white/50 hover:text-white uppercase transition';
+      }
+      if (histTabSpx) {
+        histTabSpx.className = !isSpy
+          ? 'px-3 py-1.5 border border-white bg-white text-black font-bold uppercase transition'
+          : 'px-3 py-1.5 border border-white/30 text-white/50 hover:text-white uppercase transition';
+      }
+
+      const histSymEl = document.getElementById('hist-current-symbol');
+      if (histSymEl) histSymEl.innerText = symbol;
+
+      loadAction(symbol);
+      loadHistory(symbol);
+    }
+
+    async function refreshData() {
+      const btn = document.getElementById('btn-refresh');
+      btn.innerText = 'REFRESHING...';
+      btn.classList.add('opacity-100');
+      await Promise.all([
+        loadAction(currentSymbol, true),
+        loadHistory(currentSymbol, true)
+      ]);
+      btn.innerText = 'REFRESH';
+      btn.classList.remove('opacity-100');
+    }
+
+    // Modal & Slide-over Navigation
+    function openInfoModal() {
+      infoModal.classList.remove('translate-x-full');
+      modalBackdrop.classList.remove('hidden');
+      setTimeout(() => modalBackdrop.classList.remove('opacity-0'), 10);
+      infoModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeInfoModal() {
+      infoModal.classList.add('translate-x-full');
+      modalBackdrop.classList.add('opacity-0');
+      setTimeout(() => modalBackdrop.classList.add('hidden'), 300);
+      infoModal.setAttribute('aria-hidden', 'true');
+    }
+
+    function openHistoryLedger() {
+      closeInfoModal();
+      historyView.classList.remove('hidden');
+      setTimeout(() => historyView.classList.remove('opacity-0'), 10);
+      mainView.classList.add('opacity-0');
+      window.scrollTo(0, 0);
+    }
+
+    function closeHistoryLedger() {
+      historyView.classList.add('opacity-0');
+      setTimeout(() => historyView.classList.add('hidden'), 200);
+      mainView.classList.remove('opacity-0');
+    }
+
+    function closeAllOverlays() {
+      closeSessionModal();
+      closeInfoModal();
+      closeHistoryLedger();
+    }
+
+    // Event Listeners
+    document.getElementById('btn-info').onclick = () => {
+      if (infoModal.classList.contains('translate-x-full')) {
+        openInfoModal();
+      } else {
+        closeInfoModal();
+      }
+    };
+
+    document.getElementById('btn-history').onclick = () => {
+      if (historyView.classList.contains('hidden')) {
+        openHistoryLedger();
+      } else {
+        closeHistoryLedger();
+      }
+    };
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (sessionModal && !sessionModal.classList.contains('hidden')) {
+          closeSessionModal();
+        } else {
+          closeAllOverlays();
+        }
+      } else if (e.key === 'i' || e.key === 'I') {
+        if (!e.target.matches('input, textarea')) {
+          if (infoModal.classList.contains('translate-x-full')) openInfoModal();
+          else closeInfoModal();
+        }
+      } else if (e.key === 'h' || e.key === 'H') {
+        if (!e.target.matches('input, textarea')) {
+          if (historyView.classList.contains('hidden')) openHistoryLedger();
+          else closeHistoryLedger();
+        }
+      } else if (e.key === 's' || e.key === 'S') {
+        if (!e.target.matches('input, textarea')) {
+          switchSymbol(currentSymbol === 'SPY' ? 'SPX' : 'SPY');
+        }
+      }
+    });
+
+    // Initial boot
+    switchSymbol('SPY');
+  </script>
+</body>
+</html>
