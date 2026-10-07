@@ -2,9 +2,9 @@ name: Daily Dealer Gamma Collector
 
 on:
   schedule:
-    # 9:20 AM ET (13:20 UTC Mon-Fri during EDT / 14:20 UTC during EST) - Pre-market gamma snapshot
+    # 9:20 AM ET (13:20 UTC Mon-Fri during EDT / 14:20 UTC during EST) - Pre-market snapshot
     - cron: '20 13 * * 1-5'
-    # 4:15 PM ET (20:15 UTC Mon-Fri during EDT / 21:15 UTC during EST) - Post-market outcome verification
+    # 4:15 PM ET (20:15 UTC Mon-Fri during EDT / 21:15 UTC during EST) - Post-market verification
     - cron: '15 20 * * 1-5'
   workflow_dispatch: # Allows manual trigger anytime from the GitHub UI for testing
 
@@ -16,10 +16,10 @@ jobs:
       - name: 📥 Check out repository
         uses: actions/checkout@v4
 
-      - name: 🐍 Set up Python 3.11
+      - name: 🐍 Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: 'pip'
 
       - name: 📦 Install Python Dependencies
@@ -34,7 +34,20 @@ jobs:
         run: |
           python cron_collector.py
 
+      - name: 🔍 Check Hostinger FTP Secrets
+        id: check_ftp
+        env:
+          FTP_HOST: ${{ secrets.HOSTINGER_FTP_HOST }}
+        run: |
+          if [ -z "$FTP_HOST" ]; then
+            echo "::warning::HOSTINGER_FTP_HOST secret is not configured yet in GitHub Settings -> Secrets. Skipping FTP sync."
+            echo "configured=false" >> $GITHUB_OUTPUT
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: 🚀 Upload API JSON Files to Hostinger via FTP
+        if: steps.check_ftp.outputs.configured == 'true'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.HOSTINGER_FTP_HOST }}
