@@ -1,7 +1,7 @@
 {
   "symbol": "SPY",
   "date": "2026-10-16",
-  "updated_at": "2026-10-19T21:05:32.877976+00:00",
+  "updated_at": "2026-10-19T21:13:32.597461+00:00",
   "spot_price": 763.25,
   "prior_close": 771.79,
   "flip_level": 783.35,
@@ -18,7 +18,7 @@
     "gamma_ratio": 0.33,
     "dealer_hedging": "Vol-Expanding (Trend Accelerating: Sell Breaks / Chase Momentum)",
     "cash_account_rule": "Settle T+1. Fast execution. Target Put Wall breakdown; avoid holding through chop.",
-    "updated_at": "2026-10-19T21:05:32.877976+00:00",
+    "updated_at": "2026-10-19T21:13:32.597461+00:00",
     "data_source": "thetadata_nexus"
   }
 }

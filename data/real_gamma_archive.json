@@ -8,7 +8,7 @@
       "regime": "-Gamma",
       "call_wall_oi": 2784409,
       "put_wall_oi": 4228660,
-      "recorded_at": "2026-10-19T21:05:32.879434+00:00",
+      "recorded_at": "2026-10-19T21:13:32.601241+00:00",
       "source": "thetadata_nexus"
     },
     "2026-10-15": {
@@ -142,7 +142,7 @@
       "regime": "-Gamma",
       "call_wall_oi": 83329,
       "put_wall_oi": 145768,
-      "recorded_at": "2026-10-19T21:05:58.006052+00:00",
+      "recorded_at": "2026-10-19T21:13:54.133271+00:00",
       "source": "thetadata_nexus"
     },
     "2026-10-15": {
