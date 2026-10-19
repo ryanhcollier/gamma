@@ -35,7 +35,10 @@ _load_env_file()
 
 THETADATA_API_KEY = os.getenv("THETADATA_API_KEY", "").strip()
 
-CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+CACHE_DIR = os.path.join(BASE_DIR, "cache")
+os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 RISK_FREE_RATE = 0.045  # 4.5% treasury yield proxy
@@ -82,7 +85,12 @@ def save_cached_json(filename: str, data: Dict[str, Any]) -> None:
         print(f"Error caching {filename}: {e}")
 
 
-ARCHIVE_FILE = os.path.join(CACHE_DIR, "real_gamma_archive.json")
+DATA_DIR = os.path.join(BASE_DIR, "data")
+CACHE_DIR = os.path.join(BASE_DIR, "cache")
+os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(CACHE_DIR, exist_ok=True)
+ARCHIVE_FILE = os.path.join(DATA_DIR, "real_gamma_archive.json")
+CACHE_ARCHIVE_FILE = os.path.join(CACHE_DIR, "real_gamma_archive.json")
 
 try:
     from db_manager import db
@@ -105,16 +113,17 @@ def load_real_gamma_archive() -> Dict[str, Dict[str, Any]]:
         except Exception as e:
             print(f"load_real_gamma_archive db error: {e}")
 
-    # 2. Merge with local JSON archive file
-    if os.path.exists(ARCHIVE_FILE):
-        try:
-            with open(ARCHIVE_FILE, "r") as f:
-                json_data = json.load(f)
-                for s in ("SPY", "SPX"):
-                    if json_data.get(s):
-                        combined_archive[s].update(json_data[s])
-        except Exception:
-            pass
+    # 2. Merge with local JSON archive files (both data/ and cache/)
+    for arch_path in (ARCHIVE_FILE, CACHE_ARCHIVE_FILE):
+        if os.path.exists(arch_path):
+            try:
+                with open(arch_path, "r") as f:
+                    json_data = json.load(f)
+                    for s in ("SPY", "SPX"):
+                        if json_data.get(s):
+                            combined_archive[s].update(json_data[s])
+            except Exception:
+                pass
 
     # 3. If empty, seed with initial verified anchor
     if not combined_archive["SPY"] and not combined_archive["SPX"]:
@@ -145,11 +154,12 @@ def load_real_gamma_archive() -> Dict[str, Dict[str, Any]]:
             }
         }
         combined_archive = seed_archive
-        try:
-            with open(ARCHIVE_FILE, "w") as f:
-                json.dump(seed_archive, f, indent=2)
-        except Exception:
-            pass
+        for arch_path in (ARCHIVE_FILE, CACHE_ARCHIVE_FILE):
+            try:
+                with open(arch_path, "w") as f:
+                    json.dump(seed_archive, f, indent=2)
+            except Exception:
+                pass
 
     return combined_archive
 
@@ -166,7 +176,7 @@ def record_real_gamma_snapshot(symbol: str, date_str: str, data: Dict[str, Any])
         except Exception as e:
             print(f"record_real_gamma_snapshot db error: {e}")
 
-    # 2. Save to JSON archive file
+    # 2. Save to JSON archive files (both data/ and cache/)
     archive = load_real_gamma_archive()
     if sym not in archive:
         archive[sym] = {}
@@ -181,11 +191,12 @@ def record_real_gamma_snapshot(symbol: str, date_str: str, data: Dict[str, Any])
         "recorded_at": datetime.now(timezone.utc).isoformat(),
         "source": source
     }
-    try:
-        with open(ARCHIVE_FILE, "w") as f:
-            json.dump(archive, f, indent=2)
-    except Exception as e:
-        print(f"Error saving real gamma archive: {e}")
+    for arch_path in (ARCHIVE_FILE, CACHE_ARCHIVE_FILE):
+        try:
+            with open(arch_path, "w") as f:
+                json.dump(archive, f, indent=2)
+        except Exception as e:
+            print(f"Error saving real gamma archive to {arch_path}: {e}")
 
 
 
@@ -198,6 +209,10 @@ class ThetaDataManager:
         self._client = None
         self._init_failed = False
         self._subscription_info = None
+
+    @property
+    def is_configured(self) -> bool:
+        return bool(self.api_key and not self._init_failed)
 
     def get_client(self):
         if not self.api_key or self._init_failed:
@@ -263,9 +278,20 @@ class ThetaDataManager:
 
         try:
             md = client.market_data
-            all_exps = list(md.option_list_expirations(display_sym))
-            # Pick up to 4 near-term expirations to stay comfortably within rate limits
-            active_exps = [e for e in all_exps if e >= date_str][:4]
+            option_roots = ["SPXW", "SPX"] if display_sym == "SPX" else [display_sym]
+            active_exps = []
+            chosen_root = option_roots[0]
+            for opt_sym in option_roots:
+                try:
+                    exps = list(md.option_list_expirations(opt_sym))
+                    candidate_active = [e for e in exps if e >= date_str][:4]
+                    if candidate_active:
+                        active_exps = candidate_active
+                        chosen_root = opt_sym
+                        break
+                except Exception:
+                    continue
+
             if not active_exps:
                 return None
 
@@ -283,7 +309,17 @@ class ThetaDataManager:
                     days = max((d2 - d1).days, 0.5)
                     T = days / 365.0
 
-                    ticks = list(md.option_history_eod(display_sym, exp, date_str, date_str))
+                    ticks = []
+                    roots_to_try = [chosen_root] if display_sym != "SPX" else [chosen_root, "SPX" if chosen_root == "SPXW" else "SPXW"]
+                    for r_sym in roots_to_try:
+                        try:
+                            t_list = list(md.option_history_eod(r_sym, exp, date_str, date_str))
+                            if t_list:
+                                ticks = t_list
+                                break
+                        except Exception:
+                            continue
+
                     for t in ticks:
                         k = float(t.strike)
                         if not (0.85 * spot <= k <= 1.15 * spot):
@@ -463,8 +499,11 @@ class GammaEngine:
             is_pos_gamma=is_pos_gamma,
         )
 
+        now_iso = datetime.now(timezone.utc).isoformat()
         result = {
             "symbol": display_sym,
+            "date": last_date_str,
+            "updated_at": now_iso,
             "spot_price": round(spot, 2),
             "prior_close": round(prior_close, 2),
             "flip_level": round(flip_level, 2),
@@ -481,7 +520,7 @@ class GammaEngine:
                 "gamma_ratio": round(max(gamma_res.get("total_call_vol", 1), 1) / max(gamma_res.get("total_put_vol", 1), 1), 2),
                 "dealer_hedging": "Vol-Dampening (Mean Reverting: Buy Dips / Sell Rips)" if is_pos_gamma else "Vol-Expanding (Trend Accelerating: Sell Breaks / Chase Momentum)",
                 "cash_account_rule": "Settle T+1. Fixed premium risk. Exit on opening push to Call Wall or cut at VWAP violation." if is_pos_gamma else "Settle T+1. Fast execution. Target Put Wall breakdown; avoid holding through chop.",
-                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": now_iso,
                 "data_source": "thetadata_nexus",
             },
         }
@@ -592,8 +631,12 @@ class GammaEngine:
         call_wall_oi = int(sum(oi for k, oi, _, _ in calls_data if abs(k - call_wall) < 0.01))
         put_wall_oi = int(sum(oi for k, oi, _, _ in puts_data if abs(k - put_wall) < 0.01))
 
+        last_date_str = hist.index[-1].strftime("%Y-%m-%d")
+        now_iso = datetime.now(timezone.utc).isoformat()
         result = {
             "symbol": display_sym,
+            "date": last_date_str,
+            "updated_at": now_iso,
             "spot_price": round(spot, 2),
             "prior_close": round(prior_close, 2),
             "flip_level": round(flip_level, 2),
@@ -615,7 +658,6 @@ class GammaEngine:
             },
         }
 
-        last_date_str = hist.index[-1].strftime("%Y-%m-%d")
         record_real_gamma_snapshot(display_sym, last_date_str, result)
         return result
 
@@ -741,6 +783,50 @@ class GammaEngine:
                 row = hist.iloc[i]
                 d = row.name.strftime("%Y-%m-%d") if hasattr(row.name, "strftime") else str(row.name)[:10]
                 date_map[d] = (i, row)
+
+        # Backfill any missing completed trading sessions from ThetaData institutional options EOD
+        # This builds out the full unbroken running ledger for all days since the archive started
+        if hist is not None and not hist.empty and theta_manager.is_configured:
+            recent_missing = [d for d in date_map.keys() if d >= "2026-10-01" and d not in archive]
+            for missing_d in recent_missing[:12]:
+                try:
+                    idx, row = date_map[missing_d]
+                    spot_p = float(row["Close"])
+                    print(f"Auto-backfilling {display_sym} real options gamma for {missing_d} (Spot: ${spot_p:.2f})...")
+                    gamma_snap = theta_manager.fetch_options_gamma(display_sym, spot_p, missing_d)
+                    if gamma_snap:
+                        flip_lvl = gamma_snap["flip_level"]
+                        cw = gamma_snap["call_wall"]
+                        pw = gamma_snap["put_wall"]
+                        ng = gamma_snap["net_gamma"]
+                        reg = "+Gamma" if spot_p > flip_lvl else "-Gamma"
+                        snap_payload = {
+                            "flip_level": flip_lvl,
+                            "call_wall": cw,
+                            "put_wall": pw,
+                            "net_gamma": ng,
+                            "regime": reg,
+                            "spot_price": spot_p,
+                            "sub_metrics": {
+                                "call_wall_oi": gamma_snap.get("call_wall_vol", 0),
+                                "put_wall_oi": gamma_snap.get("put_wall_vol", 0),
+                                "data_source": "thetadata_nexus",
+                            }
+                        }
+                        record_real_gamma_snapshot(display_sym, missing_d, snap_payload)
+                        archive[missing_d] = {
+                            "flip_level": flip_lvl,
+                            "call_wall": cw,
+                            "put_wall": pw,
+                            "net_gamma": ng,
+                            "regime": reg,
+                            "call_wall_oi": gamma_snap.get("call_wall_vol", 0),
+                            "put_wall_oi": gamma_snap.get("put_wall_vol", 0),
+                            "source": "thetadata_nexus",
+                        }
+                        time.sleep(0.5)
+                except Exception as bf_e:
+                    print(f"Auto-backfill error on {missing_d} for {display_sym}: {bf_e}")
 
         # Process strictly the verified dates in chronological order
         archive_dates = sorted(list(archive.keys()))

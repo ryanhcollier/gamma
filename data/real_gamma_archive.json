@@ -1,0 +1,270 @@
+{
+  "SPY": {
+    "2026-10-16": {
+      "flip_level": 783.35,
+      "call_wall": 765.0,
+      "put_wall": 762.0,
+      "net_gamma": -17874300992.0,
+      "regime": "-Gamma",
+      "call_wall_oi": 2784409,
+      "put_wall_oi": 4228660,
+      "recorded_at": "2026-10-19T21:05:32.879434+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-15": {
+      "flip_level": 768.76,
+      "call_wall": 772.0,
+      "put_wall": 770.0,
+      "net_gamma": 6560620555.0,
+      "regime": "+Gamma",
+      "call_wall_oi": 5998551,
+      "put_wall_oi": 4671382,
+      "recorded_at": "2026-10-19T20:56:01.314525+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-14": {
+      "flip_level": 771.67,
+      "call_wall": 770.0,
+      "put_wall": 768.0,
+      "net_gamma": -3874168773.0,
+      "regime": "-Gamma",
+      "call_wall_oi": 4777164,
+      "put_wall_oi": 5280128,
+      "recorded_at": "2026-10-19T20:55:51.155297+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-13": {
+      "flip_level": 776.71,
+      "call_wall": 778.0,
+      "put_wall": 777.0,
+      "net_gamma": 1383732096.0,
+      "regime": "+Gamma",
+      "call_wall_oi": 10090828,
+      "put_wall_oi": 8981443,
+      "recorded_at": "2026-10-19T20:55:40.669574+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-12": {
+      "flip_level": 777.52,
+      "call_wall": 778.0,
+      "put_wall": 777.0,
+      "net_gamma": 324077365.0,
+      "regime": "+Gamma",
+      "call_wall_oi": 6735795,
+      "put_wall_oi": 6663832,
+      "recorded_at": "2026-10-19T20:55:31.619230+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-09": {
+      "flip_level": 763.1,
+      "call_wall": 778.0,
+      "put_wall": 778.0,
+      "net_gamma": 5723232876.0,
+      "regime": "+Gamma",
+      "call_wall_oi": 7049046,
+      "put_wall_oi": 5781819,
+      "recorded_at": "2026-10-19T20:55:20.755025+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-08": {
+      "flip_level": 771.51,
+      "call_wall": 775.0,
+      "put_wall": 774.0,
+      "net_gamma": 3008791241.0,
+      "regime": "+Gamma",
+      "call_wall_oi": 7280572,
+      "put_wall_oi": 5650942,
+      "recorded_at": "2026-10-19T20:55:06.620534+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-07": {
+      "flip_level": 774.13,
+      "call_wall": 777.0,
+      "put_wall": 777.0,
+      "net_gamma": 1402246590.0,
+      "regime": "+Gamma",
+      "call_wall_oi": 6463138,
+      "put_wall_oi": 4716281,
+      "recorded_at": "2026-10-19T20:54:53.648934+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-06": {
+      "flip_level": 781.1,
+      "call_wall": 780.0,
+      "put_wall": 779.0,
+      "net_gamma": -1260752445.0,
+      "regime": "-Gamma",
+      "call_wall_oi": 9624608,
+      "put_wall_oi": 8092859,
+      "recorded_at": "2026-10-07T02:33:19.349865+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-05": {
+      "flip_level": 767.36,
+      "call_wall": 775.0,
+      "put_wall": 775.0,
+      "net_gamma": 5841377625.0,
+      "regime": "+Gamma",
+      "call_wall_oi": 6916571,
+      "put_wall_oi": 4718560,
+      "recorded_at": "2026-10-06T01:16:13.111490+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-02": {
+      "flip_level": 780.99,
+      "call_wall": 770.0,
+      "put_wall": 769.0,
+      "net_gamma": -3402944443.0,
+      "regime": "-Gamma",
+      "call_wall_oi": 6946558,
+      "put_wall_oi": 7890504,
+      "recorded_at": "2026-10-04T18:18:49.391006+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-01": {
+      "flip_level": 758.28,
+      "call_wall": 765.0,
+      "put_wall": 760.0,
+      "net_gamma": 6406498479.0,
+      "regime": "+Gamma",
+      "call_wall_oi": 6284126,
+      "put_wall_oi": 4766784,
+      "recorded_at": "2026-10-19T20:54:41.222006+00:00",
+      "source": "thetadata_nexus"
+    }
+  },
+  "SPX": {
+    "2026-10-16": {
+      "flip_level": 7714.52,
+      "call_wall": 7660.0,
+      "put_wall": 7650.0,
+      "net_gamma": -5264905328.0,
+      "regime": "-Gamma",
+      "call_wall_oi": 83329,
+      "put_wall_oi": 145768,
+      "recorded_at": "2026-10-19T21:05:58.006052+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-15": {
+      "flip_level": 7708.45,
+      "call_wall": 7750.0,
+      "put_wall": 7720.0,
+      "net_gamma": 4174899763.0,
+      "regime": "+Gamma",
+      "call_wall_oi": 200985,
+      "put_wall_oi": 89946,
+      "recorded_at": "2026-10-19T20:59:05.649922+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-14": {
+      "flip_level": 7751.31,
+      "call_wall": 7720.0,
+      "put_wall": 7700.0,
+      "net_gamma": -3880886193.0,
+      "regime": "-Gamma",
+      "call_wall_oi": 117527,
+      "put_wall_oi": 174757,
+      "recorded_at": "2026-10-19T20:58:42.115680+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-13": {
+      "flip_level": 7796.97,
+      "call_wall": 7810.0,
+      "put_wall": 7800.0,
+      "net_gamma": 767981143.0,
+      "regime": "+Gamma",
+      "call_wall_oi": 228664,
+      "put_wall_oi": 206151,
+      "recorded_at": "2026-10-19T20:58:21.763932+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-12": {
+      "flip_level": 7807.33,
+      "call_wall": 7805.0,
+      "put_wall": 7800.0,
+      "net_gamma": -6977701.0,
+      "regime": "-Gamma",
+      "call_wall_oi": 161443,
+      "put_wall_oi": 217609,
+      "recorded_at": "2026-10-19T20:58:00.834839+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-09": {
+      "flip_level": 7787.15,
+      "call_wall": 7815.0,
+      "put_wall": 7810.0,
+      "net_gamma": 2153045163.0,
+      "regime": "+Gamma",
+      "call_wall_oi": 190326,
+      "put_wall_oi": 156491,
+      "recorded_at": "2026-10-19T20:57:44.126488+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-08": {
+      "flip_level": 7768.36,
+      "call_wall": 7770.0,
+      "put_wall": 7750.0,
+      "net_gamma": -456086678.0,
+      "regime": "-Gamma",
+      "call_wall_oi": 132963,
+      "put_wall_oi": 181143,
+      "recorded_at": "2026-10-19T20:57:26.813820+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-07": {
+      "flip_level": 7779.95,
+      "call_wall": 7800.0,
+      "put_wall": 7800.0,
+      "net_gamma": 2484055491.0,
+      "regime": "+Gamma",
+      "call_wall_oi": 230150,
+      "put_wall_oi": 140885,
+      "recorded_at": "2026-10-19T20:57:05.959902+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-06": {
+      "flip_level": 7823.54,
+      "call_wall": 8000.0,
+      "put_wall": 8000.0,
+      "net_gamma": -1305910.0,
+      "regime": "-Gamma",
+      "call_wall_oi": 3188,
+      "put_wall_oi": 2218,
+      "recorded_at": "2026-10-07T02:33:40.506561+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-05": {
+      "flip_level": 7679.15,
+      "call_wall": 8000.0,
+      "put_wall": 8000.0,
+      "net_gamma": 19437907.0,
+      "regime": "+Gamma",
+      "call_wall_oi": 1815,
+      "put_wall_oi": 1257,
+      "recorded_at": "2026-10-06T01:16:35.596804+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-02": {
+      "flip_level": 7683.27,
+      "call_wall": 7800.0,
+      "put_wall": 8000.0,
+      "net_gamma": 7484472.0,
+      "regime": "+Gamma",
+      "call_wall_oi": 1917,
+      "put_wall_oi": 1269,
+      "recorded_at": "2026-10-04T18:19:13.488362+00:00",
+      "source": "thetadata_nexus"
+    },
+    "2026-10-01": {
+      "flip_level": 7651.43,
+      "call_wall": 7680.0,
+      "put_wall": 7650.0,
+      "net_gamma": 2415823257.0,
+      "regime": "+Gamma",
+      "call_wall_oi": 156463,
+      "put_wall_oi": 103362,
+      "recorded_at": "2026-10-19T20:56:44.763336+00:00",
+      "source": "thetadata_nexus"
+    }
+  }
+}

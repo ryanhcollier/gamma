@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Hostinger FTP Uploader for Dealer Gamma Engine web application and API files.
-Deploys index.html, core python scripts, and API JSON data directly to Hostinger.
+Deploys index.html, core python scripts, API JSON data, and persistent ledger to Hostinger.
 Zero external dependencies (uses Python standard library ftplib).
 """
 
@@ -9,6 +9,8 @@ import os
 import sys
 import ftplib
 import re
+import socket
+
 
 def clean_host(raw_host: str) -> str:
     """Strip protocol, port, path, and whitespace from hostname."""
@@ -17,6 +19,30 @@ def clean_host(raw_host: str) -> str:
     h = h.split('/')[0]                  # strip any trailing paths
     h = h.split(':')[0]                  # strip port
     return h.strip()
+
+
+def resolve_working_ftp_host(raw_host: str) -> str:
+    """
+    Intelligently discover working FTP endpoint.
+    If 'reil.studio' is passed, tests 'ftp.reil.studio' first (which listens on port 21),
+    avoiding the 30s timeout on web-only hosts.
+    """
+    cleaned = clean_host(raw_host)
+    candidates = []
+    if not cleaned.startswith("ftp."):
+        candidates.append(f"ftp.{cleaned}")
+    candidates.append(cleaned)
+
+    for cand in candidates:
+        try:
+            with socket.create_connection((cand, 21), timeout=4):
+                print(f"Verified FTP endpoint responding on port 21: {cand}")
+                return cand
+        except Exception as e:
+            print(f"Pre-check on {cand}:21 failed ({e}). Trying next candidate...")
+
+    return cleaned
+
 
 def navigate_or_create(ftp: ftplib.FTP, rel_path: str):
     """Safely navigate to a nested directory path, creating folders if needed."""
@@ -33,6 +59,7 @@ def navigate_or_create(ftp: ftplib.FTP, rel_path: str):
                 pass
             ftp.cwd(p)
 
+
 def upload_files():
     raw_host = os.getenv("HOSTINGER_FTP_HOST", "").strip()
     user = os.getenv("HOSTINGER_FTP_USER", "").strip()
@@ -42,7 +69,7 @@ def upload_files():
         print("::warning::Missing HOSTINGER_FTP_* secrets. Skipping FTP deployment.")
         sys.exit(0)
 
-    host = clean_host(raw_host)
+    host = resolve_working_ftp_host(raw_host)
     print(f"Connecting to FTP server: {host} as user: {user}...")
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -64,13 +91,40 @@ def upload_files():
         ("api/history_SPX.json", "history_SPX.json"),
     ]
 
+    # Define persistent ledger & archive files to upload -> (local_relative_path, remote_filename)
+    data_files = [
+        ("data/real_gamma_archive.json", "real_gamma_archive.json"),
+        ("data/gamma_ledger.db", "gamma_ledger.db"),
+    ]
+
     ftp = None
     try:
-        ftp = ftplib.FTP()
-        ftp.connect(host, 21, timeout=30)
-        ftp.login(user, passwd)
+        # Try FTPS (FTP over TLS) first, with fallback to standard FTP
+        try:
+            ftp = ftplib.FTP_TLS(timeout=30)
+            ftp.connect(host, 21)
+            ftp.login(user, passwd)
+            ftp.prot_p()
+            print("Connected and authenticated successfully via FTPS (TLS).")
+        except Exception as tls_err:
+            print(f"FTPS handshake failed ({tls_err}). Falling back to plain FTP...")
+            if ftp:
+                try:
+                    ftp.close()
+                except Exception:
+                    pass
+            ftp = ftplib.FTP(timeout=30)
+            ftp.connect(host, 21)
+            ftp.login(user, passwd)
+            print("Connected and authenticated successfully via plain FTP.")
+
+        # Ensure passive mode
         ftp.set_pasv(True)
-        print("Connected and authenticated successfully.")
+        # Hostinger NAT passive mode fix:
+        # Some Hostinger FTP daemons return internal RFC1918 IPs in 227 PASV response,
+        # which causes data transfer timeouts when called from GitHub Actions / outside NAT.
+        orig_makepasv = ftp.makepasv
+        ftp.makepasv = lambda: (ftp.host, orig_makepasv()[1])
 
         # Determine target base directory on Hostinger
         potential_base_targets = [
@@ -106,19 +160,38 @@ def upload_files():
             print(f"Uploaded {remote_name} successfully ({os.path.getsize(local_path)} bytes).")
 
         # 2. Upload API files to api/ subdirectory
-        ftp.cwd("/")
-        navigate_or_create(ftp, f"{target_base}/api")
-        print(f"\n--- Uploading API Files to {ftp.pwd()} ---")
-        for local_rel, remote_name in api_files:
-            local_path = os.path.join(base_dir, local_rel)
-            if not os.path.exists(local_path):
-                print(f"Skipping {local_rel} (not found locally)")
-                continue
-            with open(local_path, "rb") as f:
-                ftp.storbinary(f"STOR {remote_name}", f)
-            print(f"Uploaded {remote_name} successfully ({os.path.getsize(local_path)} bytes).")
+        for api_subdir in (f"{target_base}/api", f"{target_base}/static/api"):
+            try:
+                ftp.cwd("/")
+                navigate_or_create(ftp, api_subdir)
+                print(f"\n--- Uploading API Files to {ftp.pwd()} ---")
+                for local_rel, remote_name in api_files:
+                    local_path = os.path.join(base_dir, local_rel)
+                    if not os.path.exists(local_path):
+                        print(f"Skipping {local_rel} (not found locally)")
+                        continue
+                    with open(local_path, "rb") as f:
+                        ftp.storbinary(f"STOR {remote_name}", f)
+                    print(f"Uploaded {remote_name} to {api_subdir} ({os.path.getsize(local_path)} bytes).")
+            except Exception as api_err:
+                print(f"Warning syncing to {api_subdir}: {api_err}")
 
-        print("\nAll application and API files deployed successfully to Hostinger!")
+        # 3. Upload persistent data files to data/ subdirectory
+        try:
+            ftp.cwd("/")
+            navigate_or_create(ftp, f"{target_base}/data")
+            print(f"\n--- Uploading Persistent Ledger Files to {ftp.pwd()} ---")
+            for local_rel, remote_name in data_files:
+                local_path = os.path.join(base_dir, local_rel)
+                if not os.path.exists(local_path):
+                    continue
+                with open(local_path, "rb") as f:
+                    ftp.storbinary(f"STOR {remote_name}", f)
+                print(f"Uploaded {remote_name} to data/ ({os.path.getsize(local_path)} bytes).")
+        except Exception as data_err:
+            print(f"Warning syncing data directory: {data_err}")
+
+        print("\nAll application, API, and ledger files deployed successfully to Hostinger!")
 
     except ftplib.error_perm as e:
         print(f"::error::FTP Authentication or Permission Error: {e}")
@@ -135,6 +208,6 @@ def upload_files():
             except Exception:
                 pass
 
+
 if __name__ == "__main__":
     upload_files()
-

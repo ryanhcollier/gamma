@@ -129,6 +129,17 @@
   <main id="main-view" class="h-screen w-screen flex flex-col justify-center px-8 md:px-16 lg:px-24 transition-opacity duration-300">
     <div class="max-w-5xl">
       
+      <!-- Date & Time Pre-Market Verification -->
+      <div class="flex flex-wrap items-center gap-2 mb-3 font-mono text-[11px] uppercase tracking-wider text-neutral-400">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-neutral-400">DATA CAPTURE:</span>
+        <span id="data-timestamp" class="text-white font-medium">---</span>
+        <span class="text-neutral-600">|</span>
+        <span id="premarket-badge" class="px-2 py-0.5 border border-white/20 bg-white/5 text-[9px] text-neutral-300 font-semibold tracking-widest">
+          PRE-MARKET VERIFIED
+        </span>
+      </div>
+
       <!-- Regime & Spot Metadata Pill -->
       <div class="flex flex-wrap items-center gap-3 mb-6 font-mono text-xs tracking-widest uppercase">
         <span id="regime-tag" class="px-2.5 py-1 border border-white/40 bg-white/5 text-white font-medium">
@@ -730,9 +741,40 @@
       document.getElementById('info-hedging-desc').innerText = data.sub_metrics?.dealer_hedging || '';
       document.getElementById('info-cash-rule').innerText = data.sub_metrics?.cash_account_rule || '';
       
-      if (data.sub_metrics?.updated_at) {
-        const d = new Date(data.sub_metrics.updated_at);
-        document.getElementById('info-updated').innerText = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+      // Format timestamp for pre-market confirmation
+      const rawIso = data.updated_at || data.sub_metrics?.updated_at;
+      if (rawIso) {
+        try {
+          const d = new Date(rawIso);
+          // Format date & time in ET (options market timezone)
+          const etDateStr = d.toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+          const etTimeStr = d.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit', hour12: true });
+          const localTimeStr = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+          
+          const fullTimestamp = `${etDateStr} • ${etTimeStr} ET (${localTimeStr} Local)`;
+          
+          const timeEl = document.getElementById('data-timestamp');
+          if (timeEl) timeEl.innerText = fullTimestamp;
+
+          const infoUpdatedEl = document.getElementById('info-updated');
+          if (infoUpdatedEl) infoUpdatedEl.innerText = fullTimestamp;
+
+          // Check if captured before 9:30 AM ET market open
+          const etHour = parseInt(d.toLocaleString('en-US', { timeZone: 'America/New_York', hour: 'numeric', hour12: false }));
+          const etMin = parseInt(d.toLocaleString('en-US', { timeZone: 'America/New_York', minute: 'numeric' }));
+          const isPreMarket = (etHour < 9) || (etHour === 9 && etMin < 30);
+          
+          const badgeEl = document.getElementById('premarket-badge');
+          if (badgeEl) {
+            badgeEl.innerText = isPreMarket ? 'PRE-MARKET VERIFIED' : 'ACTIVE SESSION VERIFIED';
+            badgeEl.className = isPreMarket 
+              ? 'px-2 py-0.5 border border-emerald-400/60 bg-emerald-950/30 text-[9px] text-emerald-300 font-bold tracking-widest'
+              : 'px-2 py-0.5 border border-white/20 bg-white/5 text-[9px] text-neutral-300 font-semibold tracking-widest';
+          }
+        } catch (e) {
+          const timeEl = document.getElementById('data-timestamp');
+          if (timeEl) timeEl.innerText = rawIso.slice(0, 16).replace('T', ' ') + ' UTC';
+        }
       }
     }
 

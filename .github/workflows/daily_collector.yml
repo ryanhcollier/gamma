@@ -10,6 +10,9 @@ on:
     - cron: '15 20 * * 1-5'
   workflow_dispatch: # Allows manual trigger anytime from the GitHub UI for testing
 
+permissions:
+  contents: write
+
 jobs:
   collect-and-deploy:
     runs-on: ubuntu-latest
@@ -43,3 +46,15 @@ jobs:
           HOSTINGER_FTP_PASS: ${{ secrets.HOSTINGER_FTP_PASS }}
         run: |
           python deploy_ftp.py
+
+      - name: 💾 Commit & Push Running Ledger to Repository
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/ api/ static/api/
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Automated daily dealer gamma ledger update [skip ci]"
+            git push
+          fi

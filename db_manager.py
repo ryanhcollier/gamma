@@ -11,9 +11,19 @@ from datetime import datetime, timezone
 
 # Load environment
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
 CACHE_DIR = os.path.join(BASE_DIR, "cache")
+os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(CACHE_DIR, exist_ok=True)
-SQLITE_PATH = os.path.join(CACHE_DIR, "gamma_ledger.db")
+SQLITE_PATH = os.path.join(DATA_DIR, "gamma_ledger.db")
+
+# Seed from cache/ if data/ does not exist yet
+if not os.path.exists(SQLITE_PATH) and os.path.exists(os.path.join(CACHE_DIR, "gamma_ledger.db")):
+    try:
+        import shutil
+        shutil.copy2(os.path.join(CACHE_DIR, "gamma_ledger.db"), SQLITE_PATH)
+    except Exception:
+        pass
 
 
 def _get_env_config() -> Dict[str, Any]:
@@ -131,7 +141,40 @@ class DatabaseManager:
                 PRIMARY KEY (date, symbol)
             );
             """)
-            conn.commit()
+            # If table is empty, seed from real_gamma_archive.json
+            cursor.execute("SELECT COUNT(*) FROM daily_gamma_ledger")
+            count = cursor.fetchone()[0]
+            if count == 0:
+                arch_path = os.path.join(DATA_DIR, "real_gamma_archive.json")
+                if not os.path.exists(arch_path):
+                    arch_path = os.path.join(CACHE_DIR, "real_gamma_archive.json")
+                if os.path.exists(arch_path):
+                    try:
+                        with open(arch_path, "r") as f:
+                            arch_data = json.load(f)
+                        for sym in ("SPY", "SPX"):
+                            for date_str, item in arch_data.get(sym, {}).items():
+                                cursor.execute("""
+                                INSERT OR IGNORE INTO daily_gamma_ledger
+                                (date, symbol, flip_level, call_wall, put_wall, net_gamma, regime, call_wall_oi, put_wall_oi, data_source, recorded_at)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                """, (
+                                    date_str,
+                                    sym,
+                                    float(item.get("flip_level") or 0),
+                                    float(item.get("call_wall") or 0),
+                                    float(item.get("put_wall") or 0),
+                                    float(item.get("net_gamma") or 0),
+                                    item.get("regime") or "",
+                                    int(item.get("call_wall_oi") or 0),
+                                    int(item.get("put_wall_oi") or 0),
+                                    item.get("source") or "real_options_chain",
+                                    item.get("recorded_at") or datetime.now(timezone.utc).isoformat()
+                                ))
+                        conn.commit()
+                    except Exception as seed_err:
+                        print(f"DatabaseManager: Seed from archive error: {seed_err}")
+
             conn.close()
             print("DatabaseManager: Initialized local SQLite database storage.")
         except Exception as e:
