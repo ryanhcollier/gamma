@@ -25,18 +25,18 @@
   "sessions": [
     {
       "date": "2026-10-19",
-      "prior_flip": 779.17,
-      "open_price": 767.22,
+      "prior_flip": 779.16,
+      "open_price": 767.25,
       "high_price": 770.46,
       "low_price": 765.82,
-      "close_price": 766.6,
+      "close_price": 766.48,
       "call_wall": 768.0,
       "put_wall": 767.0,
       "regime": "-Gamma",
       "planned_action": "Breakdown / Long Put",
       "day_high_low": "$770.46 / $765.82",
       "result": "LOSS",
-      "return_proxy": -1.06,
+      "return_proxy": -1.05,
       "is_real_gamma": true,
       "gamma_source": "thetadata_nexus",
       "notes": "Bear trap: failed breakdown, squeezed through 770.46. [ThetaData Verified Options Chain]"
