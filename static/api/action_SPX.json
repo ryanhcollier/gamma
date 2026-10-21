@@ -1,7 +1,7 @@
 {
   "symbol": "SPX",
   "date": "2026-10-20",
-  "updated_at": "2026-10-20T23:11:23.838139+00:00",
+  "updated_at": "2026-10-21T18:05:35.197217+00:00",
   "spot_price": 7712.57,
   "prior_close": 7690.73,
   "flip_level": 7708.6,
@@ -18,7 +18,7 @@
     "gamma_ratio": 0.97,
     "dealer_hedging": "Vol-Dampening (Mean Reverting: Buy Dips / Sell Rips)",
     "cash_account_rule": "Settle T+1. Fixed premium risk. Exit on opening push to Call Wall or cut at VWAP violation.",
-    "updated_at": "2026-10-20T23:11:23.838139+00:00",
+    "updated_at": "2026-10-21T18:05:35.197217+00:00",
     "data_source": "thetadata_nexus"
   }
 }
