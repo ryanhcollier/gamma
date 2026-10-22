@@ -1,13 +1,13 @@
 {
   "symbol": "SPX",
-  "total_sessions": 15,
-  "winning_days": 4,
+  "total_sessions": 16,
+  "winning_days": 5,
   "losing_days": 10,
   "scratch_days": 1,
-  "win_rate_pct": 28.6,
-  "total_win_rate_pct": 26.7,
-  "avg_return_proxy_pct": -0.3,
-  "summary_banner": "28.6% Win Rate (4W - 10L) (1 Scratches)",
+  "win_rate_pct": 33.3,
+  "total_win_rate_pct": 31.2,
+  "avg_return_proxy_pct": -0.12,
+  "summary_banner": "33.3% Win Rate (5W - 10L) (1 Scratches)",
   "regime_stats": {
     "positive_gamma": {
       "count": 9,
@@ -16,13 +16,31 @@
       "win_rate": 0.0
     },
     "negative_gamma": {
-      "count": 6,
-      "wins": 4,
+      "count": 7,
+      "wins": 5,
       "losses": 2,
-      "win_rate": 66.7
+      "win_rate": 71.4
     }
   },
   "sessions": [
+    {
+      "date": "2026-10-22",
+      "prior_flip": 7671.71,
+      "open_price": 7694.62,
+      "high_price": 7702.94,
+      "low_price": 7637.36,
+      "close_price": 7663.43,
+      "call_wall": 7660.0,
+      "put_wall": 7650.0,
+      "regime": "-Gamma",
+      "planned_action": "Breakdown / Long Put",
+      "day_high_low": "$7702.94 / $7637.36",
+      "result": "WIN",
+      "return_proxy": 2.38,
+      "is_real_gamma": true,
+      "gamma_source": "thetadata_nexus",
+      "notes": "Negative gamma cascade: printed low of 7637.36 (hit Put Wall 7650.00 or -0.7%). [ThetaData Verified Options Chain]"
+    },
     {
       "date": "2026-10-21",
       "prior_flip": 7736.44,
