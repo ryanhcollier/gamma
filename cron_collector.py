@@ -83,6 +83,16 @@ def run_collection():
         except Exception as e:
             print(f"[{sym}] Error updating historical ledger: {e}")
 
+        try:
+            # 3. Evaluate live gamma alerting state
+            from alert_engine import GammaAlertEngine
+            a_eng = GammaAlertEngine(sym)
+            alert_res = a_eng.run_tick()
+            if alert_res:
+                print(f"[{sym}] Live alert triggered: {alert_res.get('strategy')}")
+        except Exception as e:
+            print(f"[{sym}] Error checking live alerts: {e}")
+
     print(f"\n[{datetime.now(timezone.utc).isoformat()}] Daily collection finished successfully.")
     print("Static JSON API files generated in api/ and static/api/ for zero-SSH hosting.\n")
 

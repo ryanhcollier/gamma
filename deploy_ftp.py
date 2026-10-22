@@ -78,6 +78,7 @@ def upload_files():
     root_files = [
         ("static/index.html", "index.html"),
         ("gamma_engine.py", "gamma_engine.py"),
+        ("alert_engine.py", "alert_engine.py"),
         ("cron_collector.py", "cron_collector.py"),
         ("db_manager.py", "db_manager.py"),
         ("requirements.txt", "requirements.txt"),
@@ -89,6 +90,8 @@ def upload_files():
         ("api/action_SPX.json", "action_SPX.json"),
         ("api/history_SPY.json", "history_SPY.json"),
         ("api/history_SPX.json", "history_SPX.json"),
+        ("api/active_alert_SPY.json", "active_alert_SPY.json"),
+        ("api/active_alert_SPX.json", "active_alert_SPX.json"),
     ]
 
     # Define persistent ledger & archive files to upload -> (local_relative_path, remote_filename)

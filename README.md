@@ -117,6 +117,49 @@ To guarantee real-time pre-market execution and an uninterrupted historical ledg
 
 ---
 
+## Real-Time Gamma Alerting Engine (`alert_engine.py`)
+
+A zero-cost automated entry & exit alerting state machine built around dealer gamma structure.
+
+### 1. Three-Layer Decision Matrix
+1. **Regime State (Net GEX):** Checks whether `Spot > Zero_Gamma_Flip` (+Gamma mean reversion) or `Spot < Zero_Gamma_Flip` (-Gamma momentum expansion).
+2. **Location Filter:** Checks if Spot enters within $0.25–$0.50 of the Major Put Wall, Call Wall, or Volatility Bands.
+3. **Execution Confirmation:** Evaluates 1-minute reversal candle wicks (hammer / wick rejection) and volume expansion ($RVOL \ge 1.5\times$ 20-period SMA). Replaces expensive tick-level CVD with zero accounts required.
+
+### 2. Concrete Strategy Set
+* **`ALERT_BUY_DIP` (+Gamma Long):** Spot tests within $0.50 of Put Wall between 10:00 AM and 2:30 PM ET, prints a lower-wick reversal candle, and closes back above the wall.
+* **`ALERT_FADE_RIP` (+Gamma Short):** Spot tests within $0.50 of Call Wall, rejects with an upper wick, and closes below the wall.
+* **`ALERT_BULL_EXPANSION` (-Gamma Long):** Spot breaks above consolidation high or crosses Zero-Flip with $1.5\times$ volume spike.
+* **`ALERT_BEAR_EXPANSION` (-Gamma Short):** Spot breaks down below Put Wall with $1.5\times$ volume spike.
+
+### 3. Structural Exit Rules
+* **Target (TP1):** Reaches Gamma Wall / Pivot $\to$ Sell 50–70%, trail remainder.
+* **Structural Invalidation (SL):** 1-minute candle close past Entry Strike $\pm \$0.40 \to$ Full immediate market exit.
+* **Regime Flip Cut:** Spot crosses Flip Line $\to$ Flatten position (dealer edge neutralized).
+* **Time Cutoff:** Current Time $\ge$ 3:15 PM ET $\to$ Flatten all intraday contracts before theta collapse.
+
+### 4. Running the Alert Monitor Daemon
+```bash
+# Continuous 60-second real-time monitor
+python3 alert_engine.py --symbol SPY --interval 60
+
+# Single evaluation tick
+python3 alert_engine.py --symbol SPY --once
+```
+
+### 5. Multi-Channel Dispatch Configuration
+In your `.env` file (optional):
+```ini
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
+TELEGRAM_BOT_TOKEN=123456789:ABCdef...
+TELEGRAM_CHAT_ID=123456789
+```
+* **macOS Desktop Notifications:** If run on Mac, native system notifications display automatically via `osascript` with sound.
+* **Web UI Live Alert Card:** Active alerts automatically appear in the brutalist web interface at `/gamma` or `reil.studio/gamma`.
+* **REST API:** Query `GET /api/alerts?symbol=SPY` or evaluate live `POST /api/alerts/evaluate?symbol=SPY`.
+
+---
+
 ## Running Locally
 
 ```bash
@@ -133,5 +176,6 @@ uvicorn app:app --reload --port 8000
 # 4. Open in browser
 http://localhost:8000/gamma
 ```
+
 
 

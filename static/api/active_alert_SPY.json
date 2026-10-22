@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-10-21T21:47:05.490393-04:00",
+  "symbol": "SPY",
+  "event": "EXIT_SIGNAL",
+  "direction": "LONG",
+  "strategy": "TIME_DECAY_CUT",
+  "trigger_price": 775.1,
+  "key_levels": {
+    "entry_price": 772.35,
+    "exit_price": 775.1,
+    "target_1": 775.0,
+    "stop_loss": 771.6,
+    "pnl_points": 2.75
+  },
+  "market_regime": {
+    "net_gex": "+8.00B",
+    "zero_gamma_level": 763.43,
+    "current_call_wall": 775.0,
+    "current_put_wall": 772.0
+  },
+  "action_required": "Current time >= 3:15 PM ET. Flatten all intraday positions to avoid 0DTE theta collapse."
+}

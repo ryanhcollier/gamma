@@ -104,6 +104,26 @@ class DatabaseManager:
                             PRIMARY KEY (date, symbol)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
                         """)
+                        cursor.execute("""
+                        CREATE TABLE IF NOT EXISTS gamma_alerts_log (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            timestamp VARCHAR(40) NOT NULL,
+                            symbol VARCHAR(10) NOT NULL,
+                            event VARCHAR(20) NOT NULL,
+                            direction VARCHAR(10) NOT NULL,
+                            strategy VARCHAR(40) NOT NULL,
+                            trigger_price DOUBLE,
+                            target_1 DOUBLE,
+                            target_2 DOUBLE,
+                            stop_loss DOUBLE,
+                            net_gex VARCHAR(30),
+                            zero_gamma_level DOUBLE,
+                            action_required TEXT,
+                            payload_json TEXT,
+                            is_active INT DEFAULT 1,
+                            created_at VARCHAR(40)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+                        """)
                     self.is_mysql = True
                     conn.close()
                     print(f"DatabaseManager: Connected to MySQL database '{self.config['name']}' on {self.config['host']}")
@@ -139,6 +159,26 @@ class DatabaseManager:
                 data_source TEXT,
                 recorded_at TEXT,
                 PRIMARY KEY (date, symbol)
+            );
+            """)
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS gamma_alerts_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT NOT NULL,
+                symbol TEXT NOT NULL,
+                event TEXT NOT NULL,
+                direction TEXT NOT NULL,
+                strategy TEXT NOT NULL,
+                trigger_price REAL,
+                target_1 REAL,
+                target_2 REAL,
+                stop_loss REAL,
+                net_gex TEXT,
+                zero_gamma_level REAL,
+                action_required TEXT,
+                payload_json TEXT,
+                is_active INTEGER DEFAULT 1,
+                created_at TEXT
             );
             """)
             # If table is empty, seed from real_gamma_archive.json
@@ -383,6 +423,168 @@ class DatabaseManager:
             print(f"SQLite get_real_archive_map error: {e}")
 
         return result
+
+    def save_alert(self, payload: Dict[str, Any]) -> bool:
+        """Persist an entry or exit alert to the database."""
+        sym = payload.get("symbol", "SPY").upper()
+        now_iso = datetime.now(timezone.utc).isoformat()
+        key_levels = payload.get("key_levels", {})
+        market_regime = payload.get("market_regime", {})
+        is_active = 1 if payload.get("event") == "ENTRY_SIGNAL" else 0
+
+        # If this is an EXIT_SIGNAL, deactivate previous active entries for this symbol
+        if payload.get("event") == "EXIT_SIGNAL":
+            self.deactivate_alert(sym)
+
+        params = {
+            "timestamp": payload.get("timestamp", now_iso),
+            "symbol": sym,
+            "event": payload.get("event", "ENTRY_SIGNAL"),
+            "direction": payload.get("direction", "LONG"),
+            "strategy": payload.get("strategy", "UNKNOWN"),
+            "trigger_price": float(payload.get("trigger_price", 0.0)),
+            "target_1": float(key_levels.get("target_1", 0.0)),
+            "target_2": float(key_levels.get("target_2", 0.0)),
+            "stop_loss": float(key_levels.get("stop_loss", 0.0)),
+            "net_gex": str(market_regime.get("net_gex", "")),
+            "zero_gamma_level": float(market_regime.get("zero_gamma_level", 0.0)),
+            "action_required": str(payload.get("action_required", "")),
+            "payload_json": json.dumps(payload),
+            "is_active": is_active,
+            "created_at": now_iso,
+        }
+
+        if self.is_mysql:
+            conn = self._get_mysql_connection()
+            if conn:
+                try:
+                    with conn.cursor() as cursor:
+                        cursor.execute("""
+                        INSERT INTO gamma_alerts_log
+                        (timestamp, symbol, event, direction, strategy, trigger_price, target_1, target_2, stop_loss, net_gex, zero_gamma_level, action_required, payload_json, is_active, created_at)
+                        VALUES (%(timestamp)s, %(symbol)s, %(event)s, %(direction)s, %(strategy)s, %(trigger_price)s, %(target_1)s, %(target_2)s, %(stop_loss)s, %(net_gex)s, %(zero_gamma_level)s, %(action_required)s, %(payload_json)s, %(is_active)s, %(created_at)s);
+                        """, params)
+                    conn.close()
+                    return True
+                except Exception as e:
+                    print(f"MySQL save_alert error: {e}")
+
+        try:
+            conn = self._get_sqlite_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+            INSERT INTO gamma_alerts_log
+            (timestamp, symbol, event, direction, strategy, trigger_price, target_1, target_2, stop_loss, net_gex, zero_gamma_level, action_required, payload_json, is_active, created_at)
+            VALUES (:timestamp, :symbol, :event, :direction, :strategy, :trigger_price, :target_1, :target_2, :stop_loss, :net_gex, :zero_gamma_level, :action_required, :payload_json, :is_active, :created_at);
+            """, params)
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            print(f"SQLite save_alert error: {e}")
+            return False
+
+    def deactivate_alert(self, symbol: str = "SPY") -> bool:
+        """Mark active position alerts as closed/inactive."""
+        sym = "SPX" if symbol.upper() in ("SPX", "^SPX") else "SPY"
+        if self.is_mysql:
+            conn = self._get_mysql_connection()
+            if conn:
+                try:
+                    with conn.cursor() as cursor:
+                        cursor.execute("UPDATE gamma_alerts_log SET is_active = 0 WHERE symbol = %s;", (sym,))
+                    conn.close()
+                    return True
+                except Exception as e:
+                    print(f"MySQL deactivate_alert error: {e}")
+        try:
+            conn = self._get_sqlite_connection()
+            cursor = conn.cursor()
+            cursor.execute("UPDATE gamma_alerts_log SET is_active = 0 WHERE symbol = ?;", (sym,))
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            print(f"SQLite deactivate_alert error: {e}")
+            return False
+
+    def get_active_alert(self, symbol: str = "SPY") -> Optional[Dict[str, Any]]:
+        """Get currently active entry alert if any."""
+        sym = "SPX" if symbol.upper() in ("SPX", "^SPX") else "SPY"
+        if self.is_mysql:
+            conn = self._get_mysql_connection()
+            if conn:
+                try:
+                    with conn.cursor() as cursor:
+                        cursor.execute("SELECT * FROM gamma_alerts_log WHERE symbol = %s AND is_active = 1 ORDER BY id DESC LIMIT 1;", (sym,))
+                        row = cursor.fetchone()
+                        if row:
+                            return json.loads(row["payload_json"]) if row.get("payload_json") else dict(row)
+                    conn.close()
+                except Exception as e:
+                    print(f"MySQL get_active_alert error: {e}")
+
+        try:
+            conn = self._get_sqlite_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM gamma_alerts_log WHERE symbol = ? AND is_active = 1 ORDER BY id DESC LIMIT 1;", (sym,))
+            row = cursor.fetchone()
+            conn.close()
+            if row:
+                row_dict = dict(row)
+                return json.loads(row_dict["payload_json"]) if row_dict.get("payload_json") else row_dict
+        except Exception as e:
+            print(f"SQLite get_active_alert error: {e}")
+
+        return None
+
+    def get_recent_alerts(self, symbol: Optional[str] = None, limit: int = 20) -> List[Dict[str, Any]]:
+        """Get list of recent alert payloads."""
+        sym = "SPX" if symbol and symbol.upper() in ("SPX", "^SPX") else ("SPY" if symbol else None)
+        results = []
+        if self.is_mysql:
+            conn = self._get_mysql_connection()
+            if conn:
+                try:
+                    with conn.cursor() as cursor:
+                        if sym:
+                            cursor.execute("SELECT * FROM gamma_alerts_log WHERE symbol = %s ORDER BY id DESC LIMIT %s;", (sym, int(limit)))
+                        else:
+                            cursor.execute("SELECT * FROM gamma_alerts_log ORDER BY id DESC LIMIT %s;", (int(limit),))
+                        for r in cursor.fetchall():
+                            if r.get("payload_json"):
+                                try:
+                                    results.append(json.loads(r["payload_json"]))
+                                    continue
+                                except Exception:
+                                    pass
+                            results.append(dict(r))
+                    conn.close()
+                    return results
+                except Exception as e:
+                    print(f"MySQL get_recent_alerts error: {e}")
+
+        try:
+            conn = self._get_sqlite_connection()
+            cursor = conn.cursor()
+            if sym:
+                cursor.execute(f"SELECT * FROM gamma_alerts_log WHERE symbol = ? ORDER BY id DESC LIMIT {int(limit)};", (sym,))
+            else:
+                cursor.execute(f"SELECT * FROM gamma_alerts_log ORDER BY id DESC LIMIT {int(limit)};")
+            for r in cursor.fetchall():
+                r_dict = dict(r)
+                if r_dict.get("payload_json"):
+                    try:
+                        results.append(json.loads(r_dict["payload_json"]))
+                        continue
+                    except Exception:
+                        pass
+                results.append(r_dict)
+            conn.close()
+        except Exception as e:
+            print(f"SQLite get_recent_alerts error: {e}")
+
+        return results
 
 
 # Singleton instance

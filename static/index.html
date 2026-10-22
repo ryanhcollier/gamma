@@ -163,6 +163,30 @@
         </span>
       </div>
 
+      <!-- LIVE GAMMA ENTRY / EXIT ALERT BANNER (Shown when active signal exists) -->
+      <div id="live-alert-banner" class="hidden mb-6 border border-emerald-400/80 bg-emerald-950/20 p-4 font-mono transition-all selection-invert">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/20 pb-2 mb-2">
+          <div class="flex items-center space-x-2 text-xs tracking-wider uppercase font-semibold">
+            <span id="alert-pulse" class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+            <span id="alert-event-badge" class="px-2 py-0.5 bg-emerald-400 text-black font-bold text-[10px]">ENTRY_SIGNAL</span>
+            <span id="alert-strategy-name" class="text-white text-xs">ALERT_BUY_DIP (LONG)</span>
+          </div>
+          <div class="text-[11px] text-neutral-300">
+            TRIGGERED @ <span id="alert-trigger-price" class="text-white font-bold">$---</span>
+          </div>
+        </div>
+        <div class="text-sm font-sans font-medium text-white mb-2 leading-relaxed" id="alert-action-text">
+          Loading live alert action...
+        </div>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-neutral-400 font-mono">
+          <span>TARGET 1: <strong id="alert-target-1" class="text-emerald-300">$---</strong></span>
+          <span>STOP LOSS: <strong id="alert-stop-loss" class="text-red-300">$---</strong></span>
+          <span>REGIME GEX: <strong id="alert-net-gex" class="text-neutral-200">---</strong></span>
+          <span class="text-neutral-600">|</span>
+          <span id="alert-timestamp" class="text-neutral-400 text-[10px]">---</span>
+        </div>
+      </div>
+
       <!-- PRIMARY COMMAND: 1 to 2 concise sentences, 3xl to 5xl, tracking tight -->
       <h1 
         id="action-headline" 
@@ -639,9 +663,91 @@
       if (data) {
         currentActionData = data;
         renderAction(data);
+        loadAlerts(symbol);
       } else {
         document.getElementById('action-headline').innerText = 
           'Market positioning data temporarily unavailable. Check backend connection.';
+      }
+    }
+
+    async function loadAlerts(symbol) {
+      const encodedSym = encodeURIComponent(symbol);
+      let alertData = null;
+
+      try {
+        const dynamicUrl = `${API_BASE}/alerts?symbol=${encodedSym}`;
+        const res = await fetch(dynamicUrl);
+        if (res.ok) {
+          const json = await res.json();
+          alertData = json.active_alert;
+        }
+      } catch (e) {
+        // Fallback to static JSON
+      }
+
+      if (!alertData) {
+        try {
+          const staticUrl = `${API_BASE}/active_alert_${encodedSym}.json?t=${Date.now()}`;
+          const res = await fetch(staticUrl);
+          if (res.ok) {
+            alertData = await res.json();
+          }
+        } catch (e) {
+          // No active alert
+        }
+      }
+
+      renderAlert(alertData);
+    }
+
+    function renderAlert(alertData) {
+      const banner = document.getElementById('live-alert-banner');
+      if (!banner) return;
+
+      if (!alertData || alertData.event !== 'ENTRY_SIGNAL') {
+        banner.classList.add('hidden');
+        return;
+      }
+
+      banner.classList.remove('hidden');
+      const isLong = alertData.direction === 'LONG';
+      const eventBadge = document.getElementById('alert-event-badge');
+      const strategyName = document.getElementById('alert-strategy-name');
+      const triggerPrice = document.getElementById('alert-trigger-price');
+      const actionText = document.getElementById('alert-action-text');
+      const target1 = document.getElementById('alert-target-1');
+      const stopLoss = document.getElementById('alert-stop-loss');
+      const netGex = document.getElementById('alert-net-gex');
+      const timestamp = document.getElementById('alert-timestamp');
+      const pulse = document.getElementById('alert-pulse');
+
+      if (isLong) {
+        banner.className = 'mb-6 border border-emerald-400/80 bg-emerald-950/20 p-4 font-mono transition-all selection-invert';
+        eventBadge.className = 'px-2 py-0.5 bg-emerald-400 text-black font-bold text-[10px]';
+        pulse.className = 'inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping';
+      } else {
+        banner.className = 'mb-6 border border-red-500/80 bg-red-950/20 p-4 font-mono transition-all selection-invert';
+        eventBadge.className = 'px-2 py-0.5 bg-red-500 text-black font-bold text-[10px]';
+        pulse.className = 'inline-block w-2.5 h-2.5 rounded-full bg-red-500 animate-ping';
+      }
+
+      eventBadge.innerText = alertData.event || 'ENTRY_SIGNAL';
+      strategyName.innerText = `${alertData.strategy} (${alertData.direction})`;
+      triggerPrice.innerText = `$${(alertData.trigger_price || 0).toFixed(2)}`;
+      actionText.innerText = alertData.action_required || '';
+
+      const kl = alertData.key_levels || {};
+      target1.innerText = kl.target_1 ? `$${Number(kl.target_1).toFixed(2)}` : '---';
+      stopLoss.innerText = kl.stop_loss ? `$${Number(kl.stop_loss).toFixed(2)}` : '---';
+      netGex.innerText = alertData.market_regime?.net_gex || '---';
+
+      if (alertData.timestamp) {
+        try {
+          const d = new Date(alertData.timestamp);
+          timestamp.innerText = d.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit' }) + ' ET';
+        } catch (e) {
+          timestamp.innerText = alertData.timestamp;
+        }
       }
     }
 
@@ -1101,6 +1207,13 @@
         }
       }
     });
+
+    // Periodic alert background poller (every 30 seconds)
+    setInterval(() => {
+      if (typeof loadAlerts === 'function') {
+        loadAlerts(currentSymbol);
+      }
+    }, 30000);
 
     // Initial boot
     switchSymbol('SPY');

@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import os
+import json
 
 from gamma_engine import engine
 
@@ -58,6 +59,72 @@ async def get_history(
     day outcomes (WIN / LOSS / SCRATCH), and win/loss summary statistics.
     """
     return engine.compute_60_day_history(symbol=symbol, force_refresh=refresh)
+
+
+@app.get("/api/alerts")
+@app.get("/gamma/api/alerts")
+async def get_alerts(
+    symbol: str = Query("SPY", description="Ticker symbol (SPY or SPX)"),
+    check_live: bool = Query(False, description="Evaluate latest 1-min bar live"),
+):
+    """
+    Returns current active entry/exit alert and recent alert history.
+    Optionally evaluates the live 1-minute bar on demand.
+    """
+    from alert_engine import GammaAlertEngine
+    from db_manager import db
+    from datetime import datetime, timezone
+
+    sym = "SPX" if symbol.upper() in ("SPX", "^SPX") else "SPY"
+    alert_engine = GammaAlertEngine(sym)
+
+    latest_triggered = None
+    if check_live:
+        latest_triggered = alert_engine.run_tick()
+
+    active = alert_engine.active_position or db.get_active_alert(sym)
+    recent = db.get_recent_alerts(sym, limit=10)
+
+    # Check fallback cached active alert file
+    if not active:
+        for folder in ("cache", "api", "static/api"):
+            fpath = os.path.join(BASE_DIR, folder, f"active_alert_{sym}.json")
+            if os.path.exists(fpath):
+                try:
+                    with open(fpath, "r") as f:
+                        cached = json.load(f)
+                        if cached.get("event") == "ENTRY_SIGNAL":
+                            active = cached
+                            break
+                except Exception:
+                    pass
+
+    return {
+        "symbol": sym,
+        "active_alert": active,
+        "recent_alerts": recent,
+        "latest_tick_alert": latest_triggered,
+        "trading_window": "10:00 AM - 3:15 PM ET",
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+
+@app.post("/api/alerts/evaluate")
+@app.post("/gamma/api/alerts/evaluate")
+async def evaluate_live_alert(
+    symbol: str = Query("SPY", description="Ticker symbol (SPY or SPX)")
+):
+    """Manually triggers a 1-minute bar evaluation through the gamma alert engine."""
+    from alert_engine import GammaAlertEngine
+    sym = "SPX" if symbol.upper() in ("SPX", "^SPX") else "SPY"
+    engine_inst = GammaAlertEngine(sym)
+    fired_alert = engine_inst.run_tick()
+    return {
+        "symbol": sym,
+        "alert_fired": bool(fired_alert),
+        "payload": fired_alert
+    }
+
 
 
 @app.get("/health")
