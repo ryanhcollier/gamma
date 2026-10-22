@@ -6,45 +6,45 @@
   "scratch_days": 1,
   "win_rate_pct": 21.4,
   "total_win_rate_pct": 20.0,
-  "avg_return_proxy_pct": 0.07,
+  "avg_return_proxy_pct": 0.0,
   "summary_banner": "21.4% Win Rate (3W - 11L) (1 Scratches)",
   "regime_stats": {
     "positive_gamma": {
-      "count": 10,
+      "count": 9,
       "wins": 0,
-      "losses": 9,
+      "losses": 8,
       "win_rate": 0.0
     },
     "negative_gamma": {
-      "count": 5,
+      "count": 6,
       "wins": 3,
-      "losses": 2,
-      "win_rate": 60.0
+      "losses": 3,
+      "win_rate": 50.0
     }
   },
   "sessions": [
     {
       "date": "2026-10-21",
-      "prior_flip": 763.43,
-      "open_price": 771.15,
-      "high_price": 774.43,
+      "prior_flip": 774.03,
+      "open_price": 771.17,
+      "high_price": 774.44,
       "low_price": 768.4,
-      "close_price": 773.17,
+      "close_price": 773.09,
       "call_wall": 775.0,
-      "put_wall": 772.0,
-      "regime": "+Gamma",
-      "planned_action": "Buy Dips / Long Call",
-      "day_high_low": "$774.43 / $768.40",
+      "put_wall": 760.0,
+      "regime": "-Gamma",
+      "planned_action": "Breakdown / Long Put",
+      "day_high_low": "$774.44 / $768.40",
       "result": "LOSS",
-      "return_proxy": -0.28,
+      "return_proxy": -1.06,
       "is_real_gamma": true,
-      "gamma_source": "thetadata_nexus",
-      "notes": "Failed to hold support; breached Put Wall (772.00). [ThetaData Verified Options Chain]"
+      "gamma_source": "live_yfinance_options",
+      "notes": "Bear trap: failed breakdown, squeezed through 774.44. [Verified Exchange Options Chain]"
     },
     {
       "date": "2026-10-20",
       "prior_flip": 757.34,
-      "open_price": 765.92,
+      "open_price": 765.86,
       "high_price": 772.29,
       "low_price": 764.25,
       "close_price": 769.05,
@@ -54,7 +54,7 @@
       "planned_action": "Buy Dips / Long Call",
       "day_high_low": "$772.29 / $764.25",
       "result": "LOSS",
-      "return_proxy": -1.01,
+      "return_proxy": -1.02,
       "is_real_gamma": true,
       "gamma_source": "thetadata_nexus",
       "notes": "Failed to hold support; breached Put Wall (769.00). [ThetaData Verified Options Chain]"
@@ -62,7 +62,7 @@
     {
       "date": "2026-10-19",
       "prior_flip": 779.16,
-      "open_price": 767.25,
+      "open_price": 767.23,
       "high_price": 770.46,
       "low_price": 765.82,
       "close_price": 766.48,
@@ -80,7 +80,7 @@
     {
       "date": "2026-10-16",
       "prior_flip": 783.35,
-      "open_price": 773.2,
+      "open_price": 773.24,
       "high_price": 773.25,
       "low_price": 760.64,
       "close_price": 763.25,
@@ -90,7 +90,7 @@
       "planned_action": "Breakdown / Long Put",
       "day_high_low": "$773.25 / $760.64",
       "result": "WIN",
-      "return_proxy": 5.2,
+      "return_proxy": 5.21,
       "is_real_gamma": true,
       "gamma_source": "thetadata_nexus",
       "notes": "Negative gamma cascade: printed low of 760.64 (hit Put Wall 762.00 or -1.6%). [ThetaData Verified Options Chain]"
@@ -98,7 +98,7 @@
     {
       "date": "2026-10-15",
       "prior_flip": 768.76,
-      "open_price": 766.29,
+      "open_price": 766.25,
       "high_price": 772.87,
       "low_price": 764.43,
       "close_price": 771.79,
@@ -108,7 +108,7 @@
       "planned_action": "Buy Dips / Long Call",
       "day_high_low": "$772.87 / $764.43",
       "result": "LOSS",
-      "return_proxy": -1.21,
+      "return_proxy": -1.22,
       "is_real_gamma": true,
       "gamma_source": "thetadata_nexus",
       "notes": "Failed to hold support; breached Put Wall (770.00). [ThetaData Verified Options Chain]"
@@ -116,7 +116,7 @@
     {
       "date": "2026-10-14",
       "prior_flip": 771.67,
-      "open_price": 775.0,
+      "open_price": 774.92,
       "high_price": 776.35,
       "low_price": 766.71,
       "close_price": 769.6,
@@ -126,7 +126,7 @@
       "planned_action": "Breakdown / Long Put",
       "day_high_low": "$776.35 / $766.71",
       "result": "WIN",
-      "return_proxy": 3.42,
+      "return_proxy": 3.39,
       "is_real_gamma": true,
       "gamma_source": "thetadata_nexus",
       "notes": "Negative gamma cascade: printed low of 766.71 (hit Put Wall 768.00 or -1.1%). [ThetaData Verified Options Chain]"
@@ -134,7 +134,7 @@
     {
       "date": "2026-10-13",
       "prior_flip": 776.71,
-      "open_price": 777.3,
+      "open_price": 777.34,
       "high_price": 778.75,
       "low_price": 775.95,
       "close_price": 778.01,
@@ -144,7 +144,7 @@
       "planned_action": "Buy Dips / Long Call",
       "day_high_low": "$778.75 / $775.95",
       "result": "LOSS",
-      "return_proxy": -0.1,
+      "return_proxy": -0.11,
       "is_real_gamma": true,
       "gamma_source": "thetadata_nexus",
       "notes": "Failed to hold support; breached Put Wall (777.00). [ThetaData Verified Options Chain]"
@@ -170,7 +170,7 @@
     {
       "date": "2026-10-09",
       "prior_flip": 763.1,
-      "open_price": 776.33,
+      "open_price": 776.24,
       "high_price": 779.42,
       "low_price": 775.14,
       "close_price": 778.57,
@@ -180,7 +180,7 @@
       "planned_action": "Buy Dips / Long Call",
       "day_high_low": "$779.42 / $775.14",
       "result": "LOSS",
-      "return_proxy": -0.54,
+      "return_proxy": -0.57,
       "is_real_gamma": true,
       "gamma_source": "thetadata_nexus",
       "notes": "Failed to hold support; breached Put Wall (778.00). [ThetaData Verified Options Chain]"
@@ -188,15 +188,15 @@
     {
       "date": "2026-10-08",
       "prior_flip": 771.51,
-      "open_price": 774.87,
+      "open_price": 774.86,
       "high_price": 777.09,
-      "low_price": 770.43,
+      "low_price": 770.44,
       "close_price": 773.93,
       "call_wall": 775.0,
       "put_wall": 774.0,
       "regime": "+Gamma",
       "planned_action": "Buy Dips / Long Call",
-      "day_high_low": "$777.09 / $770.43",
+      "day_high_low": "$777.09 / $770.44",
       "result": "LOSS",
       "return_proxy": -0.28,
       "is_real_gamma": true,
@@ -206,7 +206,7 @@
     {
       "date": "2026-10-07",
       "prior_flip": 774.13,
-      "open_price": 775.81,
+      "open_price": 775.77,
       "high_price": 779.1,
       "low_price": 773.61,
       "close_price": 777.22,
@@ -216,7 +216,7 @@
       "planned_action": "Buy Dips / Long Call",
       "day_high_low": "$779.10 / $773.61",
       "result": "LOSS",
-      "return_proxy": -0.38,
+      "return_proxy": -0.4,
       "is_real_gamma": true,
       "gamma_source": "thetadata_nexus",
       "notes": "Failed to hold support; breached Put Wall (777.00). [ThetaData Verified Options Chain]"
@@ -224,7 +224,7 @@
     {
       "date": "2026-10-06",
       "prior_flip": 781.1,
-      "open_price": 778.18,
+      "open_price": 778.15,
       "high_price": 781.62,
       "low_price": 777.96,
       "close_price": 779.09,
@@ -242,7 +242,7 @@
     {
       "date": "2026-10-05",
       "prior_flip": 767.36,
-      "open_price": 769.73,
+      "open_price": 769.69,
       "high_price": 776.61,
       "low_price": 769.63,
       "close_price": 774.83,
@@ -252,7 +252,7 @@
       "planned_action": "Buy Dips / Long Call",
       "day_high_low": "$776.61 / $769.63",
       "result": "LOSS",
-      "return_proxy": -1.71,
+      "return_proxy": -1.72,
       "is_real_gamma": true,
       "gamma_source": "thetadata_nexus",
       "notes": "Failed to hold support; breached Put Wall (775.00). [ThetaData Verified Options Chain]"
@@ -260,25 +260,25 @@
     {
       "date": "2026-10-02",
       "prior_flip": 780.99,
-      "open_price": 770.57,
+      "open_price": 770.58,
       "high_price": 772.65,
-      "low_price": 767.14,
+      "low_price": 767.15,
       "close_price": 769.64,
       "call_wall": 770.0,
       "put_wall": 769.0,
       "regime": "-Gamma",
       "planned_action": "Breakdown / Long Put",
-      "day_high_low": "$772.65 / $767.14",
+      "day_high_low": "$772.65 / $767.15",
       "result": "WIN",
       "return_proxy": 1.42,
       "is_real_gamma": true,
       "gamma_source": "thetadata_nexus",
-      "notes": "Negative gamma cascade: printed low of 767.14 (hit Put Wall 769.00 or -0.4%). [ThetaData Verified Options Chain]"
+      "notes": "Negative gamma cascade: printed low of 767.15 (hit Put Wall 769.00 or -0.4%). [ThetaData Verified Options Chain]"
     },
     {
       "date": "2026-10-01",
       "prior_flip": 758.28,
-      "open_price": 764.42,
+      "open_price": 764.36,
       "high_price": 765.65,
       "low_price": 758.79,
       "close_price": 763.99,
@@ -288,7 +288,7 @@
       "planned_action": "Buy Dips / Long Call",
       "day_high_low": "$765.65 / $758.79",
       "result": "LOSS",
-      "return_proxy": -1.45,
+      "return_proxy": -1.43,
       "is_real_gamma": true,
       "gamma_source": "thetadata_nexus",
       "notes": "Failed to hold support; breached Put Wall (760.00). [ThetaData Verified Options Chain]"
