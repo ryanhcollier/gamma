@@ -1,14 +1,14 @@
 {
   "SPY": {
     "2026-10-22": {
-      "flip_level": 764.48,
+      "flip_level": 764.47,
       "call_wall": 763.0,
       "put_wall": 762.0,
-      "net_gamma": -460054936.0,
+      "net_gamma": -574169081.0,
       "regime": "-Gamma",
-      "call_wall_oi": 4380352,
-      "put_wall_oi": 5678369,
-      "recorded_at": "2026-10-22T23:20:25.521562+00:00",
+      "call_wall_oi": 4398366,
+      "put_wall_oi": 5722670,
+      "recorded_at": "2026-10-23T17:53:47.094780+00:00",
       "source": "thetadata_nexus"
     },
     "2026-10-21": {
@@ -186,7 +186,7 @@
       "regime": "-Gamma",
       "call_wall_oi": 123051,
       "put_wall_oi": 171870,
-      "recorded_at": "2026-10-22T23:20:43.637179+00:00",
+      "recorded_at": "2026-10-23T17:54:03.609783+00:00",
       "source": "thetadata_nexus"
     },
     "2026-10-21": {
