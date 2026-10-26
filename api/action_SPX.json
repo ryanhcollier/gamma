@@ -1,7 +1,7 @@
 {
   "symbol": "SPX",
   "date": "2026-10-23",
-  "updated_at": "2026-10-23T23:07:26.654022+00:00",
+  "updated_at": "2026-10-26T19:22:03.954159+00:00",
   "spot_price": 7623.68,
   "prior_close": 7663.43,
   "flip_level": 7638.91,
@@ -18,7 +18,7 @@
     "gamma_ratio": 0.87,
     "dealer_hedging": "Vol-Expanding (Trend Accelerating: Sell Breaks / Chase Momentum)",
     "cash_account_rule": "Settle T+1. Fast execution. Target Put Wall breakdown; avoid holding through chop.",
-    "updated_at": "2026-10-23T23:07:26.654022+00:00",
+    "updated_at": "2026-10-26T19:22:03.954159+00:00",
     "data_source": "thetadata_nexus"
   }
 }
