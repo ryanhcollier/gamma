@@ -1,13 +1,13 @@
 {
   "symbol": "SPY",
-  "total_sessions": 17,
+  "total_sessions": 18,
   "winning_days": 4,
-  "losing_days": 12,
+  "losing_days": 13,
   "scratch_days": 1,
-  "win_rate_pct": 25.0,
-  "total_win_rate_pct": 23.5,
-  "avg_return_proxy_pct": 0.12,
-  "summary_banner": "25.0% Win Rate (4W - 12L) (1 Scratches)",
+  "win_rate_pct": 23.5,
+  "total_win_rate_pct": 22.2,
+  "avg_return_proxy_pct": 0.01,
+  "summary_banner": "23.5% Win Rate (4W - 13L) (1 Scratches)",
   "regime_stats": {
     "positive_gamma": {
       "count": 10,
@@ -16,13 +16,31 @@
       "win_rate": 0.0
     },
     "negative_gamma": {
-      "count": 7,
+      "count": 8,
       "wins": 4,
-      "losses": 3,
-      "win_rate": 57.1
+      "losses": 4,
+      "win_rate": 50.0
     }
   },
   "sessions": [
+    {
+      "date": "2026-10-26",
+      "prior_flip": 765.43,
+      "open_price": 762.25,
+      "high_price": 767.73,
+      "low_price": 761.64,
+      "close_price": 765.31,
+      "call_wall": 766.0,
+      "put_wall": 765.0,
+      "regime": "-Gamma",
+      "planned_action": "Breakdown / Long Put",
+      "day_high_low": "$767.73 / $761.64",
+      "result": "LOSS",
+      "return_proxy": -1.8,
+      "is_real_gamma": true,
+      "gamma_source": "thetadata_nexus",
+      "notes": "Bear trap: failed breakdown, squeezed through 767.73. [ThetaData Verified Options Chain]"
+    },
     {
       "date": "2026-10-23",
       "prior_flip": 764.71,
