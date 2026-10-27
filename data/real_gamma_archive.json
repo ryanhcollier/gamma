@@ -4,11 +4,11 @@
       "flip_level": 765.43,
       "call_wall": 766.0,
       "put_wall": 765.0,
-      "net_gamma": -57420897.0,
+      "net_gamma": -29165429.0,
       "regime": "-Gamma",
-      "call_wall_oi": 7010974,
-      "put_wall_oi": 7191797,
-      "recorded_at": "2026-10-26T23:50:37.167141+00:00",
+      "call_wall_oi": 7019699,
+      "put_wall_oi": 7184829,
+      "recorded_at": "2026-10-27T18:43:25.293562+00:00",
       "source": "thetadata_nexus"
     },
     "2026-10-23": {
@@ -208,7 +208,7 @@
       "regime": "+Gamma",
       "call_wall_oi": 191167,
       "put_wall_oi": 173763,
-      "recorded_at": "2026-10-26T23:50:49.536640+00:00",
+      "recorded_at": "2026-10-27T18:43:43.857641+00:00",
       "source": "thetadata_nexus"
     },
     "2026-10-23": {
