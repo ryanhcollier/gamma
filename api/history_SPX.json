@@ -1,18 +1,18 @@
 {
   "symbol": "SPX",
-  "total_sessions": 18,
+  "total_sessions": 19,
   "winning_days": 6,
-  "losing_days": 11,
+  "losing_days": 12,
   "scratch_days": 1,
-  "win_rate_pct": 35.3,
-  "total_win_rate_pct": 33.3,
-  "avg_return_proxy_pct": -0.12,
-  "summary_banner": "35.3% Win Rate (6W - 11L) (1 Scratches)",
+  "win_rate_pct": 33.3,
+  "total_win_rate_pct": 31.6,
+  "avg_return_proxy_pct": -0.15,
+  "summary_banner": "33.3% Win Rate (6W - 12L) (1 Scratches)",
   "regime_stats": {
     "positive_gamma": {
-      "count": 10,
+      "count": 11,
       "wins": 0,
-      "losses": 9,
+      "losses": 10,
       "win_rate": 0.0
     },
     "negative_gamma": {
@@ -23,6 +23,24 @@
     }
   },
   "sessions": [
+    {
+      "date": "2026-10-27",
+      "prior_flip": 7696.32,
+      "open_price": 7699.47,
+      "high_price": 7736.24,
+      "low_price": 7677.16,
+      "close_price": 7722.6,
+      "call_wall": 7730.0,
+      "put_wall": 7720.0,
+      "regime": "+Gamma",
+      "planned_action": "Buy Dips / Long Call",
+      "day_high_low": "$7736.24 / $7677.16",
+      "result": "LOSS",
+      "return_proxy": -0.67,
+      "is_real_gamma": true,
+      "gamma_source": "thetadata_nexus",
+      "notes": "Failed to hold support; breached Put Wall (7720.00). [ThetaData Verified Options Chain]"
+    },
     {
       "date": "2026-10-26",
       "prior_flip": 7663.58,
