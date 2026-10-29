@@ -1,24 +1,24 @@
 {
   "symbol": "SPY",
   "date": "2026-10-28",
-  "updated_at": "2026-10-29T00:00:03.618889+00:00",
-  "spot_price": 772.39,
+  "updated_at": "2026-10-29T18:58:48.475287+00:00",
+  "spot_price": 772.31,
   "prior_close": 769.66,
   "flip_level": 766.84,
   "call_wall": 772.0,
   "put_wall": 770.0,
   "regime": "+Gamma",
-  "net_gamma": 4023172619.0,
-  "action_text": "Market is in positive gamma ($772.39 > $766.84 flip). Wait for an opening dip toward VWAP, then buy 3-7 DTE calls targeting $772.",
+  "net_gamma": 3967067857.0,
+  "action_text": "Market is in positive gamma ($772.31 > $766.84 flip). Wait for an opening dip toward VWAP, then buy 3-7 DTE calls targeting $772.",
   "sub_metrics": {
-    "call_wall_oi": 3314180,
-    "put_wall_oi": 3583121,
+    "call_wall_oi": 3318388,
+    "put_wall_oi": 3607657,
     "total_call_oi": 2764828,
     "total_put_oi": 2263307,
     "gamma_ratio": 1.22,
     "dealer_hedging": "Vol-Dampening (Mean Reverting: Buy Dips / Sell Rips)",
     "cash_account_rule": "Settle T+1. Fixed premium risk. Exit on opening push to Call Wall or cut at VWAP violation.",
-    "updated_at": "2026-10-29T00:00:03.618889+00:00",
+    "updated_at": "2026-10-29T18:58:48.475287+00:00",
     "data_source": "thetadata_nexus"
   }
 }
