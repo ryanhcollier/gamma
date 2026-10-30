@@ -25,18 +25,18 @@
   "sessions": [
     {
       "date": "2026-10-29",
-      "prior_flip": 773.98,
-      "open_price": 768.79,
+      "prior_flip": 773.97,
+      "open_price": 768.72,
       "high_price": 770.76,
       "low_price": 766.62,
-      "close_price": 769.49,
+      "close_price": 769.36,
       "call_wall": 770.0,
       "put_wall": 768.0,
       "regime": "-Gamma",
       "planned_action": "Breakdown / Long Put",
       "day_high_low": "$770.76 / $766.62",
       "result": "WIN",
-      "return_proxy": 0.9,
+      "return_proxy": 0.87,
       "is_real_gamma": true,
       "gamma_source": "thetadata_nexus",
       "notes": "Negative gamma cascade: printed low of 766.62 (hit Put Wall 768.00 or -0.3%). [ThetaData Verified Options Chain]"
