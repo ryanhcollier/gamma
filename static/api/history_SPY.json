@@ -1,13 +1,13 @@
 {
   "symbol": "SPY",
-  "total_sessions": 22,
-  "winning_days": 5,
+  "total_sessions": 23,
+  "winning_days": 6,
   "losing_days": 16,
   "scratch_days": 1,
-  "win_rate_pct": 23.8,
-  "total_win_rate_pct": 22.7,
-  "avg_return_proxy_pct": -0.1,
-  "summary_banner": "23.8% Win Rate (5W - 16L) (1 Scratches)",
+  "win_rate_pct": 27.3,
+  "total_win_rate_pct": 26.1,
+  "avg_return_proxy_pct": 0.06,
+  "summary_banner": "27.3% Win Rate (6W - 16L) (1 Scratches)",
   "regime_stats": {
     "positive_gamma": {
       "count": 13,
@@ -16,27 +16,45 @@
       "win_rate": 0.0
     },
     "negative_gamma": {
-      "count": 9,
-      "wins": 5,
+      "count": 10,
+      "wins": 6,
       "losses": 4,
-      "win_rate": 55.6
+      "win_rate": 60.0
     }
   },
   "sessions": [
     {
+      "date": "2026-11-02",
+      "prior_flip": 767.61,
+      "open_price": 759.44,
+      "high_price": 763.86,
+      "low_price": 751.6,
+      "close_price": 752.15,
+      "call_wall": 755.0,
+      "put_wall": 753.0,
+      "regime": "-Gamma",
+      "planned_action": "Breakdown / Long Put",
+      "day_high_low": "$763.86 / $751.60",
+      "result": "WIN",
+      "return_proxy": 3.3,
+      "is_real_gamma": true,
+      "gamma_source": "thetadata_nexus",
+      "notes": "Negative gamma cascade: printed low of 751.60 (hit Put Wall 753.00 or -1.0%). [ThetaData Verified Options Chain]"
+    },
+    {
       "date": "2026-10-30",
       "prior_flip": 746.13,
-      "open_price": 761.38,
+      "open_price": 761.26,
       "high_price": 761.46,
       "low_price": 750.36,
-      "close_price": 755.78,
+      "close_price": 755.72,
       "call_wall": 758.0,
       "put_wall": 755.0,
       "regime": "+Gamma",
       "planned_action": "Buy Dips / Long Call",
       "day_high_low": "$761.46 / $750.36",
       "result": "LOSS",
-      "return_proxy": -2.09,
+      "return_proxy": -2.06,
       "is_real_gamma": true,
       "gamma_source": "thetadata_nexus",
       "notes": "Failed to hold support; breached Put Wall (755.00). [ThetaData Verified Options Chain]"
