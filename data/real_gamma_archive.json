@@ -256,15 +256,15 @@
   },
   "SPX": {
     "2026-11-02": {
-      "flip_level": 7608.87,
-      "call_wall": 7600.0,
-      "put_wall": 7550.0,
-      "net_gamma": -6085392730.0,
+      "flip_level": 7710.87,
+      "call_wall": 7000.0,
+      "put_wall": 8500.0,
+      "net_gamma": 0.0,
       "regime": "-Gamma",
-      "call_wall_oi": 46944,
-      "put_wall_oi": 140037,
-      "recorded_at": "2026-11-02T22:21:05.063261+00:00",
-      "source": "thetadata_nexus"
+      "call_wall_oi": 3,
+      "put_wall_oi": 2,
+      "recorded_at": "2026-11-03T02:15:46.988187+00:00",
+      "source": "live_yfinance_options"
     },
     "2026-10-30": {
       "flip_level": 7606.35,

@@ -1,24 +1,24 @@
 {
   "symbol": "SPX",
   "date": "2026-11-02",
-  "updated_at": "2026-11-02T22:21:05.034431+00:00",
+  "updated_at": "2026-11-03T02:15:46.985961+00:00",
   "spot_price": 7541.4,
   "prior_close": 7580.07,
-  "flip_level": 7608.87,
-  "call_wall": 7600.0,
-  "put_wall": 7550.0,
+  "flip_level": 7710.87,
+  "call_wall": 7000.0,
+  "put_wall": 8500.0,
   "regime": "-Gamma",
-  "net_gamma": -6085392730.0,
-  "action_text": "Market has breached negative gamma ($7541.40 < $7608.87 flip). Buy 1-2 DTE puts targeting the $7550 Put Wall, or stay in cash.",
+  "net_gamma": 0.0,
+  "action_text": "Market has breached negative gamma ($7541.40 < $7710.87 flip). Buy 1-2 DTE puts targeting the $8500 Put Wall, or stay in cash.",
   "sub_metrics": {
-    "call_wall_oi": 46944,
-    "put_wall_oi": 140037,
-    "total_call_oi": 2499142,
-    "total_put_oi": 2716706,
-    "gamma_ratio": 0.92,
+    "call_wall_oi": 3,
+    "put_wall_oi": 2,
+    "total_call_oi": 9,
+    "total_put_oi": 2,
+    "gamma_ratio": 0.0,
     "dealer_hedging": "Vol-Expanding (Trend Accelerating: Sell Breaks / Chase Momentum)",
     "cash_account_rule": "Settle T+1. Fast execution. Target Put Wall breakdown; avoid holding through chop.",
-    "updated_at": "2026-11-02T22:21:05.034431+00:00",
-    "data_source": "thetadata_nexus"
+    "updated_at": "2026-11-03T02:15:46.985982+00:00",
+    "data_source": "live_yfinance_options"
   }
 }
