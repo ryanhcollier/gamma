@@ -6,40 +6,40 @@
   "scratch_days": 1,
   "win_rate_pct": 33.3,
   "total_win_rate_pct": 32.0,
-  "avg_return_proxy_pct": 0.02,
+  "avg_return_proxy_pct": 0.04,
   "summary_banner": "33.3% Win Rate (8W - 16L) (1 Scratches)",
   "regime_stats": {
     "positive_gamma": {
-      "count": 13,
+      "count": 14,
       "wins": 0,
-      "losses": 12,
+      "losses": 13,
       "win_rate": 0.0
     },
     "negative_gamma": {
-      "count": 12,
+      "count": 11,
       "wins": 8,
-      "losses": 4,
-      "win_rate": 66.7
+      "losses": 3,
+      "win_rate": 72.7
     }
   },
   "sessions": [
     {
       "date": "2026-11-04",
-      "prior_flip": 7780.88,
+      "prior_flip": 7682.77,
       "open_price": 7635.81,
       "high_price": 7715.57,
       "low_price": 7635.81,
       "close_price": 7688.62,
-      "call_wall": 7800.0,
-      "put_wall": 7595.0,
-      "regime": "-Gamma",
-      "planned_action": "Breakdown / Long Put",
+      "call_wall": 7700.0,
+      "put_wall": 7700.0,
+      "regime": "+Gamma",
+      "planned_action": "Buy Dips / Long Call",
       "day_high_low": "$7715.57 / $7635.81",
       "result": "LOSS",
-      "return_proxy": -2.61,
+      "return_proxy": -2.1,
       "is_real_gamma": true,
-      "gamma_source": "live_yfinance_options",
-      "notes": "Bear trap: failed breakdown, squeezed through 7715.57. [Verified Exchange Options Chain]"
+      "gamma_source": "thetadata_nexus",
+      "notes": "Failed to hold support; breached Put Wall (7700.00). [ThetaData Verified Options Chain]"
     },
     {
       "date": "2026-11-03",
