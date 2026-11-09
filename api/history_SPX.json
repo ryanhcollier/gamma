@@ -1,16 +1,16 @@
 {
   "symbol": "SPX",
-  "total_sessions": 27,
+  "total_sessions": 28,
   "winning_days": 9,
   "losing_days": 17,
-  "scratch_days": 1,
+  "scratch_days": 2,
   "win_rate_pct": 34.6,
-  "total_win_rate_pct": 33.3,
+  "total_win_rate_pct": 32.1,
   "avg_return_proxy_pct": 0.48,
-  "summary_banner": "34.6% Win Rate (9W - 17L) (1 Scratches)",
+  "summary_banner": "34.6% Win Rate (9W - 17L) (2 Scratches)",
   "regime_stats": {
     "positive_gamma": {
-      "count": 14,
+      "count": 15,
       "wins": 0,
       "losses": 13,
       "win_rate": 0.0
@@ -23,6 +23,24 @@
     }
   },
   "sessions": [
+    {
+      "date": "2026-11-09",
+      "prior_flip": 7504.77,
+      "open_price": 7504.77,
+      "high_price": 7504.77,
+      "low_price": 7504.77,
+      "close_price": 7504.77,
+      "call_wall": 7550.0,
+      "put_wall": 7550.0,
+      "regime": "+Gamma",
+      "planned_action": "Buy Dips / Long Call",
+      "day_high_low": "$7504.77 / $7504.77",
+      "result": "SCRATCH",
+      "return_proxy": 0.0,
+      "is_real_gamma": true,
+      "gamma_source": "thetadata_nexus",
+      "notes": "Gapped up and hovered; never dipped into VWAP trigger zone. [ThetaData Verified Options Chain]"
+    },
     {
       "date": "2026-11-06",
       "prior_flip": 7653.08,
