@@ -1,15 +1,15 @@
 {
   "SPY": {
     "2026-11-09": {
-      "flip_level": 751.45,
-      "call_wall": 750.0,
-      "put_wall": 745.0,
-      "net_gamma": 32930873.0,
+      "flip_level": 738.48,
+      "call_wall": 753.0,
+      "put_wall": 752.0,
+      "net_gamma": 7970359497.0,
       "regime": "+Gamma",
-      "call_wall_oi": 26994,
-      "put_wall_oi": 33083,
-      "recorded_at": "2026-11-10T02:43:21.994018+00:00",
-      "source": "live_yfinance_options"
+      "call_wall_oi": 4835069,
+      "put_wall_oi": 4307458,
+      "recorded_at": "2026-11-10T20:28:59.333565+00:00",
+      "source": "thetadata_nexus"
     },
     "2026-11-06": {
       "flip_level": 768.22,
@@ -311,15 +311,15 @@
   },
   "SPX": {
     "2026-11-09": {
-      "flip_level": 6945.94,
-      "call_wall": 7650.0,
-      "put_wall": 7450.0,
-      "net_gamma": 0,
+      "flip_level": 7504.75,
+      "call_wall": 7550.0,
+      "put_wall": 7550.0,
+      "net_gamma": 4096803364.0,
       "regime": "+Gamma",
-      "call_wall_oi": 0,
-      "put_wall_oi": 0,
-      "recorded_at": "2026-11-10T02:43:23.529808+00:00",
-      "source": "live_yfinance_options"
+      "call_wall_oi": 181146,
+      "put_wall_oi": 114007,
+      "recorded_at": "2026-11-10T20:29:19.679103+00:00",
+      "source": "thetadata_nexus"
     },
     "2026-11-06": {
       "flip_level": 7653.08,
