@@ -1,13 +1,13 @@
 {
   "symbol": "SPX",
-  "total_sessions": 30,
+  "total_sessions": 31,
   "winning_days": 9,
-  "losing_days": 20,
+  "losing_days": 21,
   "scratch_days": 1,
-  "win_rate_pct": 31.0,
-  "total_win_rate_pct": 30.0,
-  "avg_return_proxy_pct": 0.23,
-  "summary_banner": "31.0% Win Rate (9W - 20L) (1 Scratches)",
+  "win_rate_pct": 30.0,
+  "total_win_rate_pct": 29.0,
+  "avg_return_proxy_pct": 0.11,
+  "summary_banner": "30.0% Win Rate (9W - 21L) (1 Scratches)",
   "regime_stats": {
     "positive_gamma": {
       "count": 17,
@@ -16,13 +16,31 @@
       "win_rate": 0.0
     },
     "negative_gamma": {
-      "count": 13,
+      "count": 14,
       "wins": 9,
-      "losses": 4,
-      "win_rate": 69.2
+      "losses": 5,
+      "win_rate": 64.3
     }
   },
   "sessions": [
+    {
+      "date": "2026-11-12",
+      "prior_flip": 8106.75,
+      "open_price": 7550.84,
+      "high_price": 7652.76,
+      "low_price": 7550.84,
+      "close_price": 7592.4,
+      "call_wall": 6825.0,
+      "put_wall": 8550.0,
+      "regime": "-Gamma",
+      "planned_action": "Breakdown / Long Put",
+      "day_high_low": "$7652.76 / $7550.84",
+      "result": "LOSS",
+      "return_proxy": -3.37,
+      "is_real_gamma": true,
+      "gamma_source": "live_yfinance_options",
+      "notes": "Bear trap: failed breakdown, squeezed through 7652.76. [Verified Exchange Options Chain]"
+    },
     {
       "date": "2026-11-11",
       "prior_flip": 7589.43,
