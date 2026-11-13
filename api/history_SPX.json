@@ -25,21 +25,21 @@
   "sessions": [
     {
       "date": "2026-11-12",
-      "prior_flip": 8106.75,
+      "prior_flip": 7607.18,
       "open_price": 7550.84,
       "high_price": 7652.76,
       "low_price": 7550.84,
       "close_price": 7592.4,
-      "call_wall": 6825.0,
-      "put_wall": 8550.0,
+      "call_wall": 7600.0,
+      "put_wall": 7600.0,
       "regime": "-Gamma",
       "planned_action": "Breakdown / Long Put",
       "day_high_low": "$7652.76 / $7550.84",
       "result": "LOSS",
       "return_proxy": -3.37,
       "is_real_gamma": true,
-      "gamma_source": "live_yfinance_options",
-      "notes": "Bear trap: failed breakdown, squeezed through 7652.76. [Verified Exchange Options Chain]"
+      "gamma_source": "thetadata_nexus",
+      "notes": "Bear trap: failed breakdown, squeezed through 7652.76. [ThetaData Verified Options Chain]"
     },
     {
       "date": "2026-11-11",
