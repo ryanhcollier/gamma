@@ -1,13 +1,13 @@
 {
   "symbol": "SPX",
-  "total_sessions": 31,
-  "winning_days": 9,
+  "total_sessions": 32,
+  "winning_days": 10,
   "losing_days": 21,
   "scratch_days": 1,
-  "win_rate_pct": 30.0,
-  "total_win_rate_pct": 29.0,
-  "avg_return_proxy_pct": 0.11,
-  "summary_banner": "30.0% Win Rate (9W - 21L) (1 Scratches)",
+  "win_rate_pct": 32.3,
+  "total_win_rate_pct": 31.2,
+  "avg_return_proxy_pct": 0.26,
+  "summary_banner": "32.3% Win Rate (10W - 21L) (1 Scratches)",
   "regime_stats": {
     "positive_gamma": {
       "count": 17,
@@ -16,13 +16,31 @@
       "win_rate": 0.0
     },
     "negative_gamma": {
-      "count": 14,
-      "wins": 9,
+      "count": 15,
+      "wins": 10,
       "losses": 5,
-      "win_rate": 64.3
+      "win_rate": 66.7
     }
   },
   "sessions": [
+    {
+      "date": "2026-11-13",
+      "prior_flip": 7617.82,
+      "open_price": 7616.85,
+      "high_price": 7621.78,
+      "low_price": 7499.4,
+      "close_price": 7561.67,
+      "call_wall": 7550.0,
+      "put_wall": 7550.0,
+      "regime": "-Gamma",
+      "planned_action": "Breakdown / Long Put",
+      "day_high_low": "$7621.78 / $7499.40",
+      "result": "WIN",
+      "return_proxy": 4.93,
+      "is_real_gamma": true,
+      "gamma_source": "live_yfinance_options",
+      "notes": "Negative gamma cascade: printed low of 7499.40 (hit Put Wall 7550.00 or -1.5%). [Verified Exchange Options Chain]"
+    },
     {
       "date": "2026-11-12",
       "prior_flip": 7607.18,
