@@ -365,6 +365,17 @@
     }
   },
   "SPX": {
+    "2026-11-17": {
+      "flip_level": 7925.43,
+      "call_wall": 6825.0,
+      "put_wall": 8010.0,
+      "net_gamma": 328422.0,
+      "regime": "-Gamma",
+      "call_wall_oi": 1791,
+      "put_wall_oi": 89,
+      "recorded_at": "2026-11-18T02:24:15.104931+00:00",
+      "source": "live_yfinance_options"
+    },
     "2026-11-16": {
       "flip_level": 7466.2,
       "call_wall": 7420.0,
