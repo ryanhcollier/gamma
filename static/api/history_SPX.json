@@ -1,18 +1,18 @@
 {
   "symbol": "SPX",
-  "total_sessions": 34,
+  "total_sessions": 35,
   "winning_days": 12,
-  "losing_days": 21,
+  "losing_days": 22,
   "scratch_days": 1,
-  "win_rate_pct": 36.4,
-  "total_win_rate_pct": 35.3,
-  "avg_return_proxy_pct": 0.55,
-  "summary_banner": "36.4% Win Rate (12W - 21L) (1 Scratches)",
+  "win_rate_pct": 35.3,
+  "total_win_rate_pct": 34.3,
+  "avg_return_proxy_pct": -0.12,
+  "summary_banner": "35.3% Win Rate (12W - 22L) (1 Scratches)",
   "regime_stats": {
     "positive_gamma": {
-      "count": 17,
+      "count": 18,
       "wins": 0,
-      "losses": 16,
+      "losses": 17,
       "win_rate": 0.0
     },
     "negative_gamma": {
@@ -23,6 +23,24 @@
     }
   },
   "sessions": [
+    {
+      "date": "2026-11-18",
+      "prior_flip": 7235.75,
+      "open_price": 7355.69,
+      "high_price": 7367.68,
+      "low_price": 7285.76,
+      "close_price": 7323.63,
+      "call_wall": 6825.0,
+      "put_wall": 8010.0,
+      "regime": "+Gamma",
+      "planned_action": "Buy Dips / Long Call",
+      "day_high_low": "$7367.68 / $7285.76",
+      "result": "LOSS",
+      "return_proxy": -22.24,
+      "is_real_gamma": true,
+      "gamma_source": "live_yfinance_options",
+      "notes": "Failed to hold support; breached Put Wall (8010.00). [Verified Exchange Options Chain]"
+    },
     {
       "date": "2026-11-17",
       "prior_flip": 7351.45,
