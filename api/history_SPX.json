@@ -1,45 +1,45 @@
 {
   "symbol": "SPX",
   "total_sessions": 35,
-  "winning_days": 12,
-  "losing_days": 22,
+  "winning_days": 13,
+  "losing_days": 21,
   "scratch_days": 1,
-  "win_rate_pct": 35.3,
-  "total_win_rate_pct": 34.3,
-  "avg_return_proxy_pct": -0.12,
-  "summary_banner": "35.3% Win Rate (12W - 22L) (1 Scratches)",
+  "win_rate_pct": 38.2,
+  "total_win_rate_pct": 37.1,
+  "avg_return_proxy_pct": 0.63,
+  "summary_banner": "38.2% Win Rate (13W - 21L) (1 Scratches)",
   "regime_stats": {
     "positive_gamma": {
-      "count": 18,
+      "count": 17,
       "wins": 0,
-      "losses": 17,
+      "losses": 16,
       "win_rate": 0.0
     },
     "negative_gamma": {
-      "count": 17,
-      "wins": 12,
+      "count": 18,
+      "wins": 13,
       "losses": 5,
-      "win_rate": 70.6
+      "win_rate": 72.2
     }
   },
   "sessions": [
     {
       "date": "2026-11-18",
-      "prior_flip": 7235.75,
+      "prior_flip": 7329.9,
       "open_price": 7355.69,
       "high_price": 7367.68,
       "low_price": 7285.76,
       "close_price": 7323.63,
-      "call_wall": 6825.0,
-      "put_wall": 8010.0,
-      "regime": "+Gamma",
-      "planned_action": "Buy Dips / Long Call",
+      "call_wall": 7330.0,
+      "put_wall": 7300.0,
+      "regime": "-Gamma",
+      "planned_action": "Breakdown / Long Put",
       "day_high_low": "$7367.68 / $7285.76",
-      "result": "LOSS",
-      "return_proxy": -22.24,
+      "result": "WIN",
+      "return_proxy": 3.04,
       "is_real_gamma": true,
-      "gamma_source": "live_yfinance_options",
-      "notes": "Failed to hold support; breached Put Wall (8010.00). [Verified Exchange Options Chain]"
+      "gamma_source": "thetadata_nexus",
+      "notes": "Negative gamma cascade: printed low of 7285.76 (hit Put Wall 7300.00 or -1.0%). [ThetaData Verified Options Chain]"
     },
     {
       "date": "2026-11-17",
