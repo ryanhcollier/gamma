@@ -27,19 +27,19 @@
       "date": "2026-11-23",
       "prior_flip": 732.72,
       "open_price": 724.33,
-      "high_price": 727.97,
-      "low_price": 713.54,
+      "high_price": 727.98,
+      "low_price": 713.53,
       "close_price": 722.29,
       "call_wall": 730.0,
       "put_wall": 730.0,
       "regime": "-Gamma",
       "planned_action": "Breakdown / Long Put",
-      "day_high_low": "$727.97 / $713.54",
+      "day_high_low": "$727.98 / $713.53",
       "result": "WIN",
       "return_proxy": 4.77,
       "is_real_gamma": true,
       "gamma_source": "live_yfinance_options",
-      "notes": "Negative gamma cascade: printed low of 713.54 (hit Put Wall 730.00 or -1.5%). [Verified Exchange Options Chain]"
+      "notes": "Negative gamma cascade: printed low of 713.53 (hit Put Wall 730.00 or -1.5%). [Verified Exchange Options Chain]"
     },
     {
       "date": "2026-11-20",

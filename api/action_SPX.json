@@ -1,14 +1,14 @@
 {
   "symbol": "SPX",
   "date": "2026-11-23",
-  "updated_at": "2026-11-24T00:55:02.614619+00:00",
+  "updated_at": "2026-11-24T04:44:29.215823+00:00",
   "spot_price": 7237.17,
   "prior_close": 6910.39,
   "flip_level": 7324.02,
   "call_wall": 8475.0,
   "put_wall": 7000.0,
   "regime": "-Gamma",
-  "net_gamma": -2955861.0,
+  "net_gamma": -2530736.0,
   "action_text": "Market has breached negative gamma ($7237.17 < $7324.02 flip). Buy 1-2 DTE puts targeting the $7000 Put Wall, or stay in cash.",
   "sub_metrics": {
     "call_wall_oi": 56,
@@ -18,7 +18,7 @@
     "gamma_ratio": 0.0,
     "dealer_hedging": "Vol-Expanding (Trend Accelerating: Sell Breaks / Chase Momentum)",
     "cash_account_rule": "Settle T+1. Fast execution. Target Put Wall breakdown; avoid holding through chop.",
-    "updated_at": "2026-11-24T00:55:02.614641+00:00",
+    "updated_at": "2026-11-24T04:44:29.215847+00:00",
     "data_source": "live_yfinance_options"
   }
 }
