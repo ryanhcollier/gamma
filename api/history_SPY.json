@@ -1,13 +1,13 @@
 {
   "symbol": "SPY",
-  "total_sessions": 36,
-  "winning_days": 12,
+  "total_sessions": 38,
+  "winning_days": 14,
   "losing_days": 23,
   "scratch_days": 1,
-  "win_rate_pct": 34.3,
-  "total_win_rate_pct": 33.3,
-  "avg_return_proxy_pct": 0.83,
-  "summary_banner": "34.3% Win Rate (12W - 23L) (1 Scratches)",
+  "win_rate_pct": 37.8,
+  "total_win_rate_pct": 36.8,
+  "avg_return_proxy_pct": 1.24,
+  "summary_banner": "37.8% Win Rate (14W - 23L) (1 Scratches)",
   "regime_stats": {
     "positive_gamma": {
       "count": 17,
@@ -16,13 +16,49 @@
       "win_rate": 0.0
     },
     "negative_gamma": {
-      "count": 19,
-      "wins": 12,
+      "count": 21,
+      "wins": 14,
       "losses": 7,
-      "win_rate": 63.2
+      "win_rate": 66.7
     }
   },
   "sessions": [
+    {
+      "date": "2026-11-23",
+      "prior_flip": 732.72,
+      "open_price": 724.33,
+      "high_price": 727.97,
+      "low_price": 713.54,
+      "close_price": 722.29,
+      "call_wall": 730.0,
+      "put_wall": 730.0,
+      "regime": "-Gamma",
+      "planned_action": "Breakdown / Long Put",
+      "day_high_low": "$727.97 / $713.54",
+      "result": "WIN",
+      "return_proxy": 4.77,
+      "is_real_gamma": true,
+      "gamma_source": "live_yfinance_options",
+      "notes": "Negative gamma cascade: printed low of 713.54 (hit Put Wall 730.00 or -1.5%). [Verified Exchange Options Chain]"
+    },
+    {
+      "date": "2026-11-20",
+      "prior_flip": 723.05,
+      "open_price": 713.56,
+      "high_price": 718.29,
+      "low_price": 686.75,
+      "close_price": 689.81,
+      "call_wall": 695.0,
+      "put_wall": 690.0,
+      "regime": "-Gamma",
+      "planned_action": "Breakdown / Long Put",
+      "day_high_low": "$718.29 / $686.75",
+      "result": "WIN",
+      "return_proxy": 12.02,
+      "is_real_gamma": true,
+      "gamma_source": "thetadata_nexus",
+      "notes": "Negative gamma cascade: printed low of 686.75 (hit Put Wall 690.00 or -3.8%). [ThetaData Verified Options Chain]"
+    },
     {
       "date": "2026-11-19",
       "prior_flip": 741.91,
